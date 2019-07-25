@@ -9,3 +9,5 @@
 
 * https://docs.python.org/3/reference/datamodel.html
 * https://github.com/python/cpython.git
+
+* https://docs.scipy.org/doc/numpy/user/quickstart.html
