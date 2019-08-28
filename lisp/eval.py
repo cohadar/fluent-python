@@ -24,6 +24,7 @@ class Atom():
 
 
 nil = Atom("()")
+t = Atom("t")
 
 
 class Node():
@@ -64,6 +65,8 @@ def eval(e, a=nil):
     if isinstance(e._value, Atom):
         if str(e._value) == 'quote':
             return e._next.value()
+        elif str(e._value) == 'atom':
+            return t if eval(e._next.value()).isAtom() else nil
     raise ValueError('NYI')
 
 
@@ -77,3 +80,13 @@ quote = Atom('quote')
 x1 = Node(quote, Node(a))
 abc = Node(a, Node(b, Node(c)))
 x2 = Node(quote, Node(abc))
+print(eval(x1))
+print(eval(x2))
+
+atom = Atom('atom')
+x3 = Node(atom, Node(Node(quote, Node(a))))
+x4 = Node(atom, Node(Node(quote, Node(Node(a, Node(b, Node(c)))))))
+x5 = Node(atom, Node(Node(quote, Node(nil))))
+print(eval(x3))
+print(eval(x4))
+print(eval(x5))
