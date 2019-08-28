@@ -1,3 +1,41 @@
+"""
+# atoms are symbols
+>>> Atom('foo')
+foo
+
+# empty list is also an atom
+>>> nil; \
+    nil.isAtom();
+()
+True
+
+# list with one element
+>>> Node(foo)
+(foo)
+
+# list with two elements
+>>> Node(foo, Node(bar))
+(foo bar)
+
+# nested lists
+>>> Node(a,           \
+         Node(b,       \
+         Node(Node(c), \
+         Node(d))))
+(a b (c) d)
+
+
+# quote operator
+>>> x = li(quote, a); print(x); eval(x)
+(quote a)
+a
+
+>>> x = li(quote, li(a, b, c)); print(x); eval(x)
+(quote (a b c))
+(a b c)
+"""
+
+
 class Atom():
     def __init__(self, _value):
         assert _value is not None
@@ -57,6 +95,16 @@ class Node():
             return "({})".format(" ".join([str(v) for v in self.vals()]))
 
 
+def li(*elements):
+    """
+    >>> li(a, b, li(c), d)
+    (a b (c) d)
+    """
+    if not elements:
+        return nil
+    return Node(elements[0], li(*elements[1:]))
+
+
 def eval(e, a=nil):
     assert isinstance(e, Atom) or isinstance(e, Node)
     assert isinstance(a, Atom) or isinstance(a, Node)
@@ -76,17 +124,9 @@ bar = Atom('bar')
 a = Atom('a')
 b = Atom('b')
 c = Atom('c')
+d = Atom('d')
 quote = Atom('quote')
-x1 = Node(quote, Node(a))
-abc = Node(a, Node(b, Node(c)))
-x2 = Node(quote, Node(abc))
-print(eval(x1))
-print(eval(x2))
-
 atom = Atom('atom')
 x3 = Node(atom, Node(Node(quote, Node(a))))
 x4 = Node(atom, Node(Node(quote, Node(Node(a, Node(b, Node(c)))))))
 x5 = Node(atom, Node(Node(quote, Node(nil))))
-print(eval(x3))
-print(eval(x4))
-print(eval(x5))
