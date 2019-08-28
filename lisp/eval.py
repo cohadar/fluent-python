@@ -76,6 +76,11 @@ t
 >>> x = li(car, qu(li(a, b, c))); print(x); eval(x)
 (car (quote (a b c)))
 a
+
+# cdr operator
+>>> x = li(cdr, qu(li(a, b, c))); print(x); eval(x)
+(cdr (quote (a b c)))
+(b c)
 """
 
 
@@ -169,22 +174,28 @@ def eval(e, a=nil):
         return e
     if isinstance(e.head(), Atom):
         if str(e.head()) == 'quote':
-            # what is quote tail has != 1 element?
+            # what is quote has wrong number of args?
             # note quote does not do argument eval!
             return e.tail().head()
         elif str(e.head()) == 'atom':
-            # what if atom tail has != 1 element?
-            return t if eval(e.tail().head()).isAtom() else nil
+            # what is atom has wrong number of args?
+            el2 = eval(e.tail().head())
+            return t if el2.isAtom() else nil
         elif str(e.head()) == 'eq':
-            # what if eq tail has != 2 elements?
+            # what if eq has wrong number of args?
             el2 = eval(e.tail().head())
             el3 = eval(e.tail().tail().head())
             return t if el2 == el3 else nil
         elif str(e.head()) == 'car':
-            # what if car tail has != 1 element?
-            # what if car tail head is not a list?
+            # what if car has wrong number of args?
             el2 = eval(e.tail().head())
+            # what if el2 is not a list?
             return el2.head()
+        elif str(e.head()) == 'cdr':
+            # what if cdr has wrong number of args?
+            el2 = eval(e.tail().head())
+            # what if el2 is not a list?
+            return el2.tail()
         else:
             raise ValueError('NYI: {}'.format(e.head()))
     raise ValueError('NYI')
@@ -202,3 +213,4 @@ quote = Atom('quote')
 atom = Atom('atom')
 eq = Atom('eq')
 car = Atom('car')
+cdr = Atom('cdr')
