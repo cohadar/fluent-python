@@ -81,6 +81,23 @@ a
 >>> x = li(cdr, qu(li(a, b, c))); print(x); eval(x)
 (cdr (quote (a b c)))
 (b c)
+
+# cons operator
+>>> x = li(cons, qu(a), qu(li(b, c))); print(x); eval(x)
+(cons (quote a) (quote (b c)))
+(a b c)
+
+>>> x = li(cons, qu(a), li(cons, qu(b), li(cons, qu(c), qu(nil)))); print(x); eval(x)
+(cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))
+(a b c)
+
+>>> x = li(car, li(cons, qu(a), qu(li(b, c)))); print(x); eval(x)
+(car (cons (quote a) (quote (b c))))
+a
+
+>>> x = li(cdr, li(cons, qu(a), qu(li(b, c)))); print(x); eval(x)
+(cdr (cons (quote a) (quote (b c))))
+(b c)
 """
 
 
@@ -196,6 +213,11 @@ def eval(e, a=nil):
             el2 = eval(e.tail().head())
             # what if el2 is not a list?
             return el2.tail()
+        elif str(e.head()) == 'cons':
+            # what if cons has wrong number of args?
+            el2 = eval(e.tail().head())
+            el3 = eval(e.tail().tail().head())
+            return Node(el2, el3)
         else:
             raise ValueError('NYI: {}'.format(e.head()))
     raise ValueError('NYI')
@@ -214,3 +236,4 @@ atom = Atom('atom')
 eq = Atom('eq')
 car = Atom('car')
 cdr = Atom('cdr')
+cons = Atom('cons')
