@@ -63,35 +63,32 @@ class Atom():
         self.__symbol = symbol
         self.__refcount = 1
 
-    def __repr__(self):
-        return self.__symbol
-
     def isAtom(self):
         return True
 
     def isNil(self):
         return self.__symbol == "()"
 
-    def value(self):
-        return self
-
     def _vals(self):
         if self.isNil():
             return []
         raise ValueError('atoms have no embedded values: ' + self.__symbol)
+
+    def __repr__(self):
+        return self.__symbol
 
 
 nil = Atom("()")  # enforce singleton?
 
 
 class Node():
-    def __init__(self, _value, _next=nil):
-        assert _value is not None
-        assert _next is not None
-        assert _next == nil or isinstance(_next, Node)
-        self._next = nil if _next is None else _next
-        self._value = _value
-        self._refcount = 1
+    def __init__(self, head, tail=nil):
+        assert head is not None
+        assert tail is not None
+        assert tail == nil or isinstance(tail, Node)
+        self.__tail = nil if tail is None else tail
+        self.__head = head
+        self.__refcount = 1
 
     def isAtom(self):
         return False
@@ -99,17 +96,20 @@ class Node():
     def isNil(self):
         return False
 
-    def value(self):
-        return self._value
+    def head(self):
+        return self.__head
+
+    def tail(self):
+        return self.__tail
 
     def _vals(self):
-        ret = self._next._vals()
-        ret.insert(0, self._value)
+        ret = self.__tail._vals()
+        ret.insert(0, self.__head)
         return ret
 
     def __repr__(self):
         if self.isAtom():
-            return self._value
+            return self.__head
         else:
             return "({})".format(" ".join([str(v) for v in self._vals()]))
 
@@ -137,11 +137,11 @@ def eval(e, a=nil):
     assert isinstance(a, Atom) or isinstance(a, Node)
     if isinstance(e, Atom):
         return e
-    if isinstance(e._value, Atom):
-        if str(e._value) == 'quote':
-            return e._next.value()
-        elif str(e._value) == 'atom':
-            return t if eval(e._next.value()).isAtom() else nil
+    if isinstance(e.head(), Atom):
+        if str(e.head()) == 'quote':
+            return e.tail().head()
+        elif str(e.head()) == 'atom':
+            return t if eval(e.tail().head()).isAtom() else nil
     raise ValueError('NYI')
 
 
@@ -155,6 +155,4 @@ c = Atom('c')
 d = Atom('d')
 quote = Atom('quote')
 atom = Atom('atom')
-x3 = Node(atom, Node(Node(quote, Node(a))))
-x4 = Node(atom, Node(Node(quote, Node(Node(a, Node(b, Node(c)))))))
-x5 = Node(atom, Node(Node(quote, Node(nil))))
+eq = Atom('eq')
