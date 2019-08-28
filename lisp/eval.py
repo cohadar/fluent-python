@@ -49,28 +49,28 @@ t
 
 
 class Atom():
-    def __init__(self, _value):
-        assert _value is not None
-        assert isinstance(_value, str)
-        self._value = _value
-        self._refcount = 1
+    def __init__(self, symbol):
+        assert symbol is not None
+        assert isinstance(symbol, str)
+        self.__symbol = symbol
+        self.__refcount = 1
 
     def __repr__(self):
-        return self._value
+        return self.__symbol
 
     def isAtom(self):
         return True
 
     def isNil(self):
-        return self._value == "()"
+        return self.__symbol == "()"
 
     def value(self):
         return self
 
-    def vals(self):
+    def _vals(self):
         if self.isNil():
             return []
-        raise ValueError('atoms have no embedded values: ' + self._value)
+        raise ValueError('atoms have no embedded values: ' + self.__symbol)
 
 
 nil = Atom("()")
@@ -95,8 +95,8 @@ class Node():
     def value(self):
         return self._value
 
-    def vals(self):
-        ret = self._next.vals()
+    def _vals(self):
+        ret = self._next._vals()
         ret.insert(0, self._value)
         return ret
 
@@ -104,7 +104,7 @@ class Node():
         if self.isAtom():
             return self._value
         else:
-            return "({})".format(" ".join([str(v) for v in self.vals()]))
+            return "({})".format(" ".join([str(v) for v in self._vals()]))
 
 
 def li(*elements):
