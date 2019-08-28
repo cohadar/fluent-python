@@ -24,7 +24,6 @@ True
          Node(d))))
 (a b (c) d)
 
-
 # quote operator
 >>> x = li(quote, a); print(x); eval(x)
 (quote a)
@@ -33,6 +32,19 @@ a
 >>> x = li(quote, li(a, b, c)); print(x); eval(x)
 (quote (a b c))
 (a b c)
+
+# atom operator
+>>> x = li(atom, qu(a)); print(x); eval(x)
+(atom (quote a))
+t
+
+>>> x = li(atom, qu(li(a, b, c))); print(x); eval(x)
+(atom (quote (a b c)))
+()
+
+>>> x = li(atom, qu(nil)); print(x); eval(x)
+(atom (quote ()))
+t
 """
 
 
@@ -103,6 +115,14 @@ def li(*elements):
     if not elements:
         return nil
     return Node(elements[0], li(*elements[1:]))
+
+
+def qu(element):
+    """
+    >>> qu(a)
+    (quote a)
+    """
+    return Node(quote, Node(element))
 
 
 def eval(e, a=nil):
