@@ -53,6 +53,19 @@ t
 >>> x = li(atom, qu(li(atom, qu(a)))); print(x); eval(x)
 (atom (quote (atom (quote a))))
 ()
+
+# eq operator
+>>> x = li(eq, qu(a), qu(a)); print(x); eval(x)
+(eq (quote a) (quote a))
+t
+
+>>> x = li(eq, qu(a), qu(b)); print(x); eval(x)
+(eq (quote a) (quote b))
+()
+
+>>> x = li(eq, qu(nil), qu(nil)); print(x); eval(x)
+(eq (quote ()) (quote ()))
+t
 """
 
 
@@ -76,6 +89,12 @@ class Atom():
 
     def __repr__(self):
         return self.__symbol
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __hash__(self):
+        return hash(str(self))
 
 
 nil = Atom("()")  # enforce singleton?
@@ -139,9 +158,19 @@ def eval(e, a=nil):
         return e
     if isinstance(e.head(), Atom):
         if str(e.head()) == 'quote':
+            # what is quote tail has != 1 element?
+            # note quote does not do argument eval!
             return e.tail().head()
         elif str(e.head()) == 'atom':
+            # what if atom tail has != 1 element?
             return t if eval(e.tail().head()).isAtom() else nil
+        elif str(e.head()) == 'eq':
+            # what if eq tail has != 2 elements?
+            first = eval(e.tail().head())
+            second = eval(e.tail().tail().head())
+            return t if first == second else nil
+        else:
+            raise ValueError('NYI: {}'.format(e.head()))
     raise ValueError('NYI')
 
 
