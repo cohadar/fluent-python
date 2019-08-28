@@ -45,6 +45,14 @@ t
 >>> x = li(atom, qu(nil)); print(x); eval(x)
 (atom (quote ()))
 t
+
+>>> x = li(atom, li(atom, qu(a))); print(x); eval(x)
+(atom (atom (quote a)))
+t
+
+>>> x = li(atom, qu(li(atom, qu(a)))); print(x); eval(x)
+(atom (quote (atom (quote a))))
+()
 """
 
 
@@ -73,8 +81,7 @@ class Atom():
         raise ValueError('atoms have no embedded values: ' + self.__symbol)
 
 
-nil = Atom("()")
-t = Atom("t")
+nil = Atom("()")  # enforce singleton?
 
 
 class Node():
@@ -139,6 +146,7 @@ def eval(e, a=nil):
 
 
 ##############################################################################
+t = Atom("t")
 foo = Atom('foo')
 bar = Atom('bar')
 a = Atom('a')
