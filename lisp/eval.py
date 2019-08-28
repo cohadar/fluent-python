@@ -1,4 +1,9 @@
 """
+Every LISP data object has 3 properties:
+* identity - memory address of Atom or Node
+* type - Atom or Node
+* value - for Atom str(self), for Node id
+
 # atoms are symbols
 >>> Atom('foo')
 foo
@@ -66,9 +71,15 @@ t
 >>> x = li(eq, qu(nil), qu(nil)); print(x); eval(x)
 (eq (quote ()) (quote ()))
 t
+
+# car operator
+>>> x = li(car, qu(li(a, b, c))); print(x); eval(x)
+(car (quote (a b c)))
+a
 """
 
 
+# implement Atom "interning" optimization?
 class Atom():
     def __init__(self, symbol):
         assert symbol is not None
@@ -166,9 +177,14 @@ def eval(e, a=nil):
             return t if eval(e.tail().head()).isAtom() else nil
         elif str(e.head()) == 'eq':
             # what if eq tail has != 2 elements?
-            first = eval(e.tail().head())
-            second = eval(e.tail().tail().head())
-            return t if first == second else nil
+            el2 = eval(e.tail().head())
+            el3 = eval(e.tail().tail().head())
+            return t if el2 == el3 else nil
+        elif str(e.head()) == 'car':
+            # what if car tail has != 1 element?
+            # what if car tail head is not a list?
+            el2 = eval(e.tail().head())
+            return el2.head()
         else:
             raise ValueError('NYI: {}'.format(e.head()))
     raise ValueError('NYI')
@@ -185,3 +201,4 @@ d = Atom('d')
 quote = Atom('quote')
 atom = Atom('atom')
 eq = Atom('eq')
+car = Atom('car')
