@@ -90,13 +90,17 @@ foo
 ### label-ed function
 >>> pp('((label f (lambda (x) (cons x f))) \
          (quote foo))')
-(foo lambda (x) (cons x f))
+(foo label f (lambda (x) (cons x f)))
 
-### program
->>> pp('(program \
-         (label f (lambda (x) (cons x (quote (b)))))   \
-         (f (quote a)))')
-(a b)
+### recursive function
+>>> pp('((label subst (lambda (x y z) \
+                       (cond ((atom z) \
+                              (cond ((eq z y) x) \
+                                    ((quote t) z))) \
+                             ((quote t) (cons (subst x y (car z)) \
+                                              (subst x y (cdr z))))))) \
+             (quote m) (quote b) (quote (a b (a b c) d)))')
+(a m (a m c) d)
 """
 
 from s_parser import parse, unparse
@@ -121,9 +125,9 @@ def eval(e, context):
     if e == []:
         return e
     if context is None:
-        context = []
+        context = {}
     assert isinstance(e, str) or isinstance(e, list)
-    assert isinstance(context, list)
+    assert isinstance(context, dict)
     if isinstance(e, str):
         return from_context(context, e[0])
     if isinstance(e[0], str):
@@ -161,39 +165,31 @@ def eval(e, context):
             # what if cond is not composed of pairs?
             # is it correct to return () if no pair matches?
             # note cond does lazy evaluation!
-            for pair in e[1:]:
-                if eval(pair[0], context) == 't':
-                    return eval(pair[1], context)
+            for cond, expr in e[1:]:
+                if eval(cond, dict(context)) == 't':
+                    return eval(expr, context)
             return []
-        elif e[0] == 'label':
-            # are labels for functions only or for general expressions?
-            context.append([e[1], e[2]])
-            # return value or () here?
-            return []
-        elif e[0] == 'program':
-            # context get's updated from 'statement' to statement
-            p = [eval(arg, context) for arg in e[1:]]
-            # last expression return is the value of program
-            return p[-1]
         else:
             s = from_context(context, e[0])
             if s == e[0]:
                 raise ValueError('symbols cannot be operators: ' + str(s))
-            e[0] = s
-            return eval(e, context)
+            return eval([s] + e[1:], context)
     elif e[0][0] == 'lambda':
         decl = e[0]
         params = decl[1]
         body = decl[2]
         args = [eval(arg, context) for arg in e[1:]]
-        return eval(body, context + list(zip(params, args)))
+        context.update(zip(params, args))
+        return eval(body, context)
     elif e[0][0] == 'label':
-        label = e[0][1]
+        name = e[0][1]
         decl = e[0][2]
         params = decl[1]
         body = decl[2]
         args = [eval(arg, context) for arg in e[1:]]
-        return eval(body, context + list(zip(params, args)) + [[label, decl]])
+        context.update(zip(params, args))
+        context.update([[name, e[0]]])
+        return eval(body, context)
     raise ValueError('NYI: ' + str(e))
 
 
@@ -201,12 +197,10 @@ def from_context(context, atom):
     assert isinstance(atom, str)
     if context is None:
         raise ValueError('unknown atom: ' + atom)
-    else:
-        for k, v in context:
-            if k == atom:
-                return v
+    elif atom in context:
+        return context[atom]
     raise ValueError('unknown atom: {}\ncontext: {}'.format(atom, context))
 
 
 def pp(s):
-    return print(unparse(eval(parse(s), [])))
+    return print(unparse(eval(parse(s), {})))
