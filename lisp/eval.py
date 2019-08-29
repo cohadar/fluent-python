@@ -1,25 +1,25 @@
 """
 Every LISP data object has 3 properties:
-* identity - memory address of Atom or Node
-* type - Atom or Node
-* value - for Atom str(self), for Node id
+* identity - memory address of str or Node
+* type - str or Node
+* value - for str self, for Node id
 
 # atoms are symbols
->>> Atom('foo')
+>>> peval('foo')
 foo
 
 # empty list is also an atom
->>> nil; \
-    nil.isAtom();
+>>> peval(nil); \
+    _isAtom(nil);
 ()
 True
 
 # list with one element
->>> Node(foo)
+>>> Node('foo')
 (foo)
 
 # list with two elements
->>> Node(foo, Node(bar))
+>>> Node('foo', Node('bar'))
 (foo bar)
 
 # nested lists
@@ -30,107 +30,104 @@ True
 (a b (c) d)
 
 # quote operator
->>> x = li(quote, a); print(x); eval(x)
+>>> x = li(quote, a); print(x); peval(x)
 (quote a)
 a
 
->>> x = li(quote, li(a, b, c)); print(x); eval(x)
+>>> x = li(quote, li(a, b, c)); print(x); peval(x)
 (quote (a b c))
 (a b c)
 
 # atom operator
->>> x = li(atom, qu(a)); print(x); eval(x)
+>>> x = li(atom, qu(a)); print(x); peval(x)
 (atom (quote a))
 t
 
->>> x = li(atom, qu(li(a, b, c))); print(x); eval(x)
+>>> x = li(atom, qu(li(a, b, c))); print(x); peval(x)
 (atom (quote (a b c)))
 ()
 
->>> x = li(atom, qu(nil)); print(x); eval(x)
+>>> x = li(atom, qu(nil)); print(x); peval(x)
 (atom (quote ()))
 t
 
->>> x = li(atom, li(atom, qu(a))); print(x); eval(x)
+>>> x = li(atom, li(atom, qu(a))); print(x); peval(x)
 (atom (atom (quote a)))
 t
 
->>> x = li(atom, qu(li(atom, qu(a)))); print(x); eval(x)
+>>> x = li(atom, qu(li(atom, qu(a)))); print(x); peval(x)
 (atom (quote (atom (quote a))))
 ()
 
 # eq operator
->>> x = li(eq, qu(a), qu(a)); print(x); eval(x)
+>>> x = li(eq, qu(a), qu(a)); print(x); peval(x)
 (eq (quote a) (quote a))
 t
 
->>> x = li(eq, qu(a), qu(b)); print(x); eval(x)
+>>> x = li(eq, qu(a), qu(b)); print(x); peval(x)
 (eq (quote a) (quote b))
 ()
 
->>> x = li(eq, qu(nil), qu(nil)); print(x); eval(x)
+>>> x = li(eq, qu(nil), qu(nil)); print(x); peval(x)
 (eq (quote ()) (quote ()))
 t
 
 # car operator
->>> x = li(car, qu(li(a, b, c))); print(x); eval(x)
+>>> x = li(car, qu(li(a, b, c))); print(x); peval(x)
 (car (quote (a b c)))
 a
 
 # cdr operator
->>> x = li(cdr, qu(li(a, b, c))); print(x); eval(x)
+>>> x = li(cdr, qu(li(a, b, c))); print(x); peval(x)
 (cdr (quote (a b c)))
 (b c)
 
 # cons operator
->>> x = li(cons, qu(a), qu(li(b, c))); print(x); eval(x)
+>>> x = li(cons, qu(a), qu(li(b, c))); print(x); peval(x)
 (cons (quote a) (quote (b c)))
 (a b c)
 
->>> x = li(cons, qu(a), li(cons, qu(b), li(cons, qu(c), qu(nil)))); print(x); eval(x)
+>>> x = li(cons, qu(a), li(cons, qu(b), li(cons, qu(c), qu(nil)))); print(x); peval(x)
 (cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))
 (a b c)
 
->>> x = li(car, li(cons, qu(a), qu(li(b, c)))); print(x); eval(x)
+>>> x = li(car, li(cons, qu(a), qu(li(b, c)))); print(x); peval(x)
 (car (cons (quote a) (quote (b c))))
 a
 
->>> x = li(cdr, li(cons, qu(a), qu(li(b, c)))); print(x); eval(x)
+>>> x = li(cdr, li(cons, qu(a), qu(li(b, c)))); print(x); peval(x)
 (cdr (cons (quote a) (quote (b c))))
 (b c)
 """
 
 
-# implement Atom "interning" optimization?
-class Atom():
-    def __init__(self, symbol):
-        assert symbol is not None
-        assert isinstance(symbol, str)
-        self.__symbol = symbol
-        self.__refcount = 1
+def _isAtom(e):
+    return isinstance(e, str)
 
-    def isAtom(self):
-        return True
 
-    def isNil(self):
-        return self.__symbol == "()"
+def _isNil(e):
+    return str(e) == "()"
 
-    def _vals(self):
-        if self.isNil():
+
+def _elist(e):
+    if isinstance(e, str):
+        if _isNil(e):
             return []
-        raise ValueError('atoms have no embedded values: ' + self.__symbol)
-
-    def __repr__(self):
-        return self.__symbol
-
-    def __eq__(self, other):
-        return str(self) == str(other)
-
-    def __hash__(self):
-        return hash(str(self))
+        raise ValueError('atoms have no embedded values: ' + e)
+    else:
+        ret = _elist(e.tail())
+        ret.insert(0, e.head())
+        return ret
 
 
-nil = Atom("()")  # enforce singleton?
+def _repr(e):
+    if isinstance(e, str):
+        return e
+    else:
+        return "({})".format(" ".join([str(v) for v in _elist(e)]))
+
+
+nil = "()"  # enforce singleton?
 
 
 class Node():
@@ -142,28 +139,14 @@ class Node():
         self.__head = head
         self.__refcount = 1
 
-    def isAtom(self):
-        return False
-
-    def isNil(self):
-        return False
-
     def head(self):
         return self.__head
 
     def tail(self):
         return self.__tail
 
-    def _vals(self):
-        ret = self.__tail._vals()
-        ret.insert(0, self.__head)
-        return ret
-
     def __repr__(self):
-        if self.isAtom():
-            return self.__head
-        else:
-            return "({})".format(" ".join([str(v) for v in self._vals()]))
+        return _repr(self)
 
 
 def li(*elements):
@@ -185,11 +168,11 @@ def qu(element):
 
 
 def eval(e, a=nil):
-    assert isinstance(e, Atom) or isinstance(e, Node)
-    assert isinstance(a, Atom) or isinstance(a, Node)
-    if isinstance(e, Atom):
+    assert isinstance(e, str) or isinstance(e, Node)
+    assert isinstance(a, str) or isinstance(a, Node)
+    if isinstance(e, str):
         return e
-    if isinstance(e.head(), Atom):
+    if isinstance(e.head(), str):
         if str(e.head()) == 'quote':
             # what is quote has wrong number of args?
             # note quote does not do argument eval!
@@ -197,7 +180,7 @@ def eval(e, a=nil):
         elif str(e.head()) == 'atom':
             # what is atom has wrong number of args?
             el2 = eval(e.tail().head())
-            return t if el2.isAtom() else nil
+            return t if _isAtom(el2) else nil
         elif str(e.head()) == 'eq':
             # what if eq has wrong number of args?
             el2 = eval(e.tail().head())
@@ -223,17 +206,21 @@ def eval(e, a=nil):
     raise ValueError('NYI')
 
 
+def peval(e):
+    print(eval(e))
+
+
 ##############################################################################
-t = Atom("t")
-foo = Atom('foo')
-bar = Atom('bar')
-a = Atom('a')
-b = Atom('b')
-c = Atom('c')
-d = Atom('d')
-quote = Atom('quote')
-atom = Atom('atom')
-eq = Atom('eq')
-car = Atom('car')
-cdr = Atom('cdr')
-cons = Atom('cons')
+t = "t"
+foo = 'foo'
+bar = 'bar'
+a = 'a'
+b = 'b'
+c = 'c'
+d = 'd'
+quote = 'quote'
+atom = 'atom'
+eq = 'eq'
+car = 'car'
+cdr = 'cdr'
+cons = 'cons'
