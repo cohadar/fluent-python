@@ -103,13 +103,15 @@ def _isAtom(e):
     return isinstance(e, str) or e == []
 
 
-def eval(e, a=[]):
+def eval(e, context):
     if e == []:
         return e
+    if context is None:
+        context = []
     assert isinstance(e, str) or isinstance(e, list)
-    assert isinstance(a, str) or isinstance(a, list)
+    assert isinstance(context, list)
     if isinstance(e, str):
-        return e
+        return from_context(context, e[0])
     if isinstance(e[0], str):
         if e[0] == 'quote':
             # what is quote has wrong number of args?
@@ -117,27 +119,27 @@ def eval(e, a=[]):
             return e[1]
         elif e[0] == 'atom':
             # what is atom has wrong number of args?
-            arg1 = eval(e[1])
+            arg1 = eval(e[1], context)
             return 't' if _isAtom(arg1) else []
         elif e[0] == 'eq':
             # what if eq has wrong number of args?
-            arg1 = eval(e[1])
-            arg2 = eval(e[2])
+            arg1 = eval(e[1], context)
+            arg2 = eval(e[2], context)
             return 't' if arg1 == arg2 else []
         elif e[0] == 'car':
             # what if car has wrong number of args?
-            arg1 = eval(e[1])
+            arg1 = eval(e[1], context)
             # what if arg1 is not a list?
             return arg1[0]
         elif e[0] == 'cdr':
             # what if cdr has wrong number of args?
-            arg1 = eval(e[1])
+            arg1 = eval(e[1], context)
             # what if arg1 is not a list?
             return arg1[1:]
         elif e[0] == 'cons':
             # what if cons has wrong number of args?
-            arg1 = eval(e[1])
-            arg2 = eval(e[2])
+            arg1 = eval(e[1], context)
+            arg2 = eval(e[2], context)
             ret = [arg1]
             ret.extend(arg2)
             return ret
@@ -146,23 +148,38 @@ def eval(e, a=[]):
             # is it correct to return () if no pair matches?
             # note cond does lazy evaluation!
             for pair in e[1:]:
-                if eval(pair[0]) == 't':
-                    return eval(pair[1])
+                if eval(pair[0], context) == 't':
+                    return eval(pair[1], context)
             return []
         else:
-            raise ValueError('NYI: {}'.format(e[0]))
+            raise ValueError('NYI operator: ' + e[0])
     elif e[0][0] == 'lambda':
-        params = e[0][1]
-        body = e[0][2]
-        args = [eval(arg) for arg in e[1:]]
-        return eval(subst(body, params, args))
-    raise ValueError('NYI')
+        func = e[0]
+        args = [eval(arg, context) for arg in e[1:]]
+        params = func[1]
+        body = func[2]
+        return eval(body, context + list(zip(params, args)))
+    raise ValueError('NYI: ' + str(e))
 
 
-def subst(body, params, args):
-    # TODO
-    return []
+def from_context(context, atom):
+    assert isinstance(atom, str)
+    if context is None:
+        raise ValueError('unknown atom: ' + atom)
+    else:
+        for k, v in context:
+            if k == atom:
+                return v
+    raise ValueError('unknown atom: {}\ncontext: {}'.format(atom, context))
+
+
+def subst(body, context=None):
+    if context is None:
+        context = []
+    if isinstance(body, str):
+        return from_context(context, body)
+    return [subst(e, context) for e in body]
 
 
 def pp(s):
-    return print(unparse(eval(parse(s))))
+    return print(unparse(eval(parse(s), [])))
