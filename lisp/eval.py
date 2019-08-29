@@ -115,8 +115,8 @@ def _elist(e):
             return []
         raise ValueError('atoms have no embedded values: ' + e)
     else:
-        ret = _elist(e.tail())
-        ret.insert(0, e.head())
+        ret = _elist(_tail(e))
+        ret.insert(0, _head(e))
         return ret
 
 
@@ -130,20 +130,23 @@ def _repr(e):
 nil = "()"  # enforce singleton?
 
 
+def _head(e):
+    assert isinstance(e, Node)
+    return e._head
+
+
+def _tail(e):
+    assert isinstance(e, Node)
+    return e._tail
+
+
 class Node():
     def __init__(self, head, tail=nil):
         assert head is not None
         assert tail is not None
         assert tail == nil or isinstance(tail, Node)
-        self.__tail = nil if tail is None else tail
-        self.__head = head
-        self.__refcount = 1
-
-    def head(self):
-        return self.__head
-
-    def tail(self):
-        return self.__tail
+        self._tail = nil if tail is None else tail
+        self._head = head
 
 
 def li(*elements):
@@ -169,37 +172,37 @@ def eval(e, a=nil):
     assert isinstance(a, str) or isinstance(a, Node)
     if isinstance(e, str):
         return e
-    if isinstance(e.head(), str):
-        if str(e.head()) == 'quote':
+    if isinstance(_head(e), str):
+        if str(_head(e)) == 'quote':
             # what is quote has wrong number of args?
             # note quote does not do argument eval!
-            return e.tail().head()
-        elif str(e.head()) == 'atom':
+            return _head(_tail(e))
+        elif str(_head(e)) == 'atom':
             # what is atom has wrong number of args?
-            el2 = eval(e.tail().head())
+            el2 = eval(_head(_tail(e)))
             return t if _isAtom(el2) else nil
-        elif str(e.head()) == 'eq':
+        elif str(_head(e)) == 'eq':
             # what if eq has wrong number of args?
-            el2 = eval(e.tail().head())
-            el3 = eval(e.tail().tail().head())
+            el2 = eval(_head(_tail(e)))
+            el3 = eval(_head(_tail(_tail(e))))
             return t if el2 == el3 else nil
-        elif str(e.head()) == 'car':
+        elif str(_head(e)) == 'car':
             # what if car has wrong number of args?
-            el2 = eval(e.tail().head())
+            el2 = eval(_head(_tail(e)))
             # what if el2 is not a list?
-            return el2.head()
-        elif str(e.head()) == 'cdr':
+            return _head(el2)
+        elif str(_head(e)) == 'cdr':
             # what if cdr has wrong number of args?
-            el2 = eval(e.tail().head())
+            el2 = eval(_head(_tail(e)))
             # what if el2 is not a list?
-            return el2.tail()
-        elif str(e.head()) == 'cons':
+            return _tail(el2)
+        elif str(_head(e)) == 'cons':
             # what if cons has wrong number of args?
-            el2 = eval(e.tail().head())
-            el3 = eval(e.tail().tail().head())
+            el2 = eval(_head(_tail(e)))
+            el3 = eval(_head(_tail(_tail(e))))
             return Node(el2, el3)
         else:
-            raise ValueError('NYI: {}'.format(e.head()))
+            raise ValueError('NYI: {}'.format(_head(e)))
     raise ValueError('NYI')
 
 
