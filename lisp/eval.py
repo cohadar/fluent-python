@@ -99,14 +99,17 @@ a
 
 
 def _isAtom(e):
+    assert e is not None
     return isinstance(e, str) or e == []
 
 
 def _isNil(e):
+    assert e is not None
     return e == []
 
 
 def _repr(e):
+    assert e is not None
     if isinstance(e, str):
         return e
     else:
@@ -114,21 +117,23 @@ def _repr(e):
 
 
 def _head(e):
+    assert e is not None
     assert isinstance(e, list)
     return e[0]
 
 
 def _tail(e):
+    assert e is not None
     assert isinstance(e, list)
     return list(e[1:])
 
 
-def qu(element):
+def qu(e):
     """
     >>> prepr(qu(a))
     (quote a)
     """
-    return [quote, element]
+    return [quote, e]
 
 
 def eval(e, a=[]):
@@ -166,7 +171,9 @@ def eval(e, a=[]):
             # what if cons has wrong number of args?
             el2 = eval(_head(_tail(e)))
             el3 = eval(_head(_tail(_tail(e))))
-            return [el2].append(list(el3))
+            ret = [el2]
+            ret.extend(el3)
+            return ret
         else:
             raise ValueError('NYI: {}'.format(_head(e)))
     raise ValueError('NYI')
