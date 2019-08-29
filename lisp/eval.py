@@ -124,6 +124,29 @@ def qu(e):
     return [quote, e]
 
 
+def tokenize(s):
+    """
+    >>> list(tokenize('(cdr (quote (a b c)))'))
+    ['(', 'cdr', '(', 'quote', '(', 'a', 'b', 'c', ')', ')', ')']
+    """
+    start = None
+    for i, c in enumerate(s):
+        if c in [' ', '\t', '\r', '\n']:
+            if start is not None:
+                yield s[start:i]
+                start = None
+        elif c in ['(', ')']:
+            if start is not None:
+                yield s[start:i]
+                start = None
+            yield c
+        else:
+            if start is None:
+                start = i
+    if start is not None:
+        yield s[start:]
+
+
 def eval(e, a=[]):
     if e == []:
         return e
