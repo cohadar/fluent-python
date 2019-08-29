@@ -83,6 +83,12 @@ first
 >>> pp('((lambda (f) (f (quote (b c)))) \
          (quote (lambda (x) (cons (quote a) x))))')
 (a b c)
+
+### program and label
+>>> pp('(program \
+         (label f (lambda (x) (cons x (quote (b)))))   \
+         (f (quote a)))')
+(a b)
 """
 
 from s_parser import parse, unparse
@@ -151,9 +157,21 @@ def eval(e, context):
                 if eval(pair[0], context) == 't':
                     return eval(pair[1], context)
             return []
+        elif e[0] == 'label':
+            # are labels for functions only or for general expressions?
+            context.append([e[1], e[2]])
+            # return value or () here?
+            return []
+        elif e[0] == 'program':
+            # context get's updated from 'statement' to statement
+            p = [eval(arg, context) for arg in e[1:]]
+            # last expression return is the value of program
+            return p[-1]
         else:
-            # warning: potential for infinite recursion here
-            e[0] = from_context(context, e[0])
+            s = from_context(context, e[0])
+            if s == e[0]:
+                raise ValueError('symbols cannot be operators: ' + str(s))
+            e[0] = s
             return eval(e, context)
     elif e[0][0] == 'lambda':
         func = e[0]
