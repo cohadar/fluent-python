@@ -152,7 +152,9 @@ def eval(e, context):
                     return eval(pair[1], context)
             return []
         else:
-            raise ValueError('NYI operator: ' + e[0])
+            # warning: potential for infinite recursion here
+            e[0] = from_context(context, e[0])
+            return eval(e, context)
     elif e[0][0] == 'lambda':
         func = e[0]
         args = [eval(arg, context) for arg in e[1:]]
@@ -171,14 +173,6 @@ def from_context(context, atom):
             if k == atom:
                 return v
     raise ValueError('unknown atom: {}\ncontext: {}'.format(atom, context))
-
-
-def subst(body, context=None):
-    if context is None:
-        context = []
-    if isinstance(body, str):
-        return from_context(context, body)
-    return [subst(e, context) for e in body]
 
 
 def pp(s):
