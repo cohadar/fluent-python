@@ -57,9 +57,22 @@ a
 
 >>> pp('(cdr (cons (quote a) (quote (b c))))')
 (b c)
+
+### cond operator
+>>> pp('(cond ((eq (quote a) (quote b)) (quote first)) \
+              ((atom (quote a)) (quote second)))')
+second
+
+>>> pp('(cond ((eq (quote a) (quote a)) (quote first)) \
+              ((atom (quote a)) (quote second)))')
+first
+
+>>> pp('(cond (() (quote first)) \
+              (() (quote second)))')
+()
 """
 
-from parser import parse, unparse
+from s_parser import parse, unparse
 
 
 def _isAtom(e):
@@ -85,36 +98,44 @@ def eval(e, a=[]):
     if isinstance(e, str):
         return e
     if isinstance(e[0], str):
-        if str(e[0]) == 'quote':
+        if e[0] == 'quote':
             # what is quote has wrong number of args?
             # note quote does not do argument eval!
             return e[1]
-        elif str(e[0]) == 'atom':
+        elif e[0] == 'atom':
             # what is atom has wrong number of args?
             arg1 = eval(e[1])
             return 't' if _isAtom(arg1) else []
-        elif str(e[0]) == 'eq':
+        elif e[0] == 'eq':
             # what if eq has wrong number of args?
             arg1 = eval(e[1])
             arg2 = eval(e[2])
             return 't' if arg1 == arg2 else []
-        elif str(e[0]) == 'car':
+        elif e[0] == 'car':
             # what if car has wrong number of args?
             arg1 = eval(e[1])
             # what if arg1 is not a list?
             return arg1[0]
-        elif str(e[0]) == 'cdr':
+        elif e[0] == 'cdr':
             # what if cdr has wrong number of args?
             arg1 = eval(e[1])
             # what if arg1 is not a list?
             return arg1[1:]
-        elif str(e[0]) == 'cons':
+        elif e[0] == 'cons':
             # what if cons has wrong number of args?
             arg1 = eval(e[1])
             arg2 = eval(e[2])
             ret = [arg1]
             ret.extend(arg2)
             return ret
+        elif e[0] == 'cond':
+            # what if cond is not composed of pairs?
+            # is it correct to return () if no pair matches?
+            # note cond does lazy evaluation!
+            for pair in e[1:]:
+                if eval(pair[0]) == 't':
+                    return eval(pair[1])
+            return []
         else:
             raise ValueError('NYI: {}'.format(e[0]))
     raise ValueError('NYI')
