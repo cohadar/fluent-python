@@ -15,18 +15,18 @@ foo
 True
 
 # list with one element
->>> Node('foo')
+>>> prepr(Node('foo'))
 (foo)
 
 # list with two elements
->>> Node('foo', Node('bar'))
+>>> prepr(Node('foo', Node('bar')))
 (foo bar)
 
 # nested lists
->>> Node(a,           \
-         Node(b,       \
-         Node(Node(c), \
-         Node(d))))
+>>> x = Node(a,       \
+        Node(b,       \
+        Node(Node(c), \
+        Node(d)))); prepr(x)
 (a b (c) d)
 
 # quote operator
@@ -124,7 +124,7 @@ def _repr(e):
     if isinstance(e, str):
         return e
     else:
-        return "({})".format(" ".join([str(v) for v in _elist(e)]))
+        return "({})".format(" ".join([_repr(v) for v in _elist(e)]))
 
 
 nil = "()"  # enforce singleton?
@@ -145,13 +145,10 @@ class Node():
     def tail(self):
         return self.__tail
 
-    def __repr__(self):
-        return _repr(self)
-
 
 def li(*elements):
     """
-    >>> li(a, b, li(c), d)
+    >>> prepr(li(a, b, li(c), d))
     (a b (c) d)
     """
     if not elements:
@@ -161,7 +158,7 @@ def li(*elements):
 
 def qu(element):
     """
-    >>> qu(a)
+    >>> prepr(qu(a))
     (quote a)
     """
     return Node(quote, Node(element))
