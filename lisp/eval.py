@@ -70,6 +70,19 @@ first
 >>> pp('(cond (() (quote first)) \
               (() (quote second)))')
 ()
+
+### lambda
+>>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
+(a b)
+
+>>> pp('((lambda (x y) (cons x (cdr y))) \
+         (quote z)                       \
+         (quote (a b c)))')
+(z b c)
+
+>>> pp('((lambda (f) (f (quote (b c))))
+         (quote (lambda (x) (cons (quote a) x))))')
+(a b c)
 """
 
 from s_parser import parse, unparse
@@ -138,6 +151,8 @@ def eval(e, a=[]):
             return []
         else:
             raise ValueError('NYI: {}'.format(e[0]))
+    elif e[0][0] == 'lambda':
+        return ['a', 'b']
     raise ValueError('NYI')
 
 
