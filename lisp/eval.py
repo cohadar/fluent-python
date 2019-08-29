@@ -87,10 +87,10 @@ foo
          (quote (lambda (x) (cons (quote a) x))))')
 (a b c)
 
-# ### label-ed function
-# >>> pp('((label f (lambda (x) (quote f))))   \
-#          (quote a))')
-# (a b)
+### label-ed function
+>>> pp('((label f (lambda (x) (cons x f))) \
+         (quote foo))')
+(foo lambda (x) (cons x f))
 
 ### program
 >>> pp('(program \
@@ -182,11 +182,18 @@ def eval(e, context):
             e[0] = s
             return eval(e, context)
     elif e[0][0] == 'lambda':
-        func = e[0]
+        decl = e[0]
+        params = decl[1]
+        body = decl[2]
         args = [eval(arg, context) for arg in e[1:]]
-        params = func[1]
-        body = func[2]
         return eval(body, context + list(zip(params, args)))
+    elif e[0][0] == 'label':
+        label = e[0][1]
+        decl = e[0][2]
+        params = decl[1]
+        body = decl[2]
+        args = [eval(arg, context) for arg in e[1:]]
+        return eval(body, context + list(zip(params, args)) + [[label, decl]])
     raise ValueError('NYI: ' + str(e))
 
 
