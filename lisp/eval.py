@@ -72,6 +72,9 @@ first
 ()
 
 ### lambda
+>>> pp('((lambda () (quote foo)))')
+foo
+
 >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
 (a b)
 
@@ -84,7 +87,12 @@ first
          (quote (lambda (x) (cons (quote a) x))))')
 (a b c)
 
-### program and label
+# ### label-ed function
+# >>> pp('((label f (lambda (x) (quote f))))   \
+#          (quote a))')
+# (a b)
+
+### program
 >>> pp('(program \
          (label f (lambda (x) (cons x (quote (b)))))   \
          (f (quote a)))')
