@@ -59,7 +59,7 @@ a
 (b c)
 """
 
-from parser import parse
+from parser import parse, unparse
 
 
 def _isAtom(e):
@@ -77,14 +77,6 @@ def _isAtom(e):
     return isinstance(e, str) or e == []
 
 
-def _repr(e):
-    assert e is not None
-    if isinstance(e, str):
-        return e
-    else:
-        return "({})".format(" ".join([_repr(v) for v in e]))
-
-
 def eval(e, a=[]):
     if e == []:
         return e
@@ -100,12 +92,12 @@ def eval(e, a=[]):
         elif str(e[0]) == 'atom':
             # what is atom has wrong number of args?
             arg1 = eval(e[1])
-            return t if _isAtom(arg1) else []
+            return 't' if _isAtom(arg1) else []
         elif str(e[0]) == 'eq':
             # what if eq has wrong number of args?
             arg1 = eval(e[1])
             arg2 = eval(e[2])
-            return t if arg1 == arg2 else []
+            return 't' if arg1 == arg2 else []
         elif str(e[0]) == 'car':
             # what if car has wrong number of args?
             arg1 = eval(e[1])
@@ -129,20 +121,4 @@ def eval(e, a=[]):
 
 
 def pp(s):
-    return print(_repr((eval(parse(s)))))
-
-
-##############################################################################
-t = "t"
-foo = 'foo'
-bar = 'bar'
-a = 'a'
-b = 'b'
-c = 'c'
-d = 'd'
-quote = 'quote'
-atom = 'atom'
-eq = 'eq'
-car = 'car'
-cdr = 'cdr'
-cons = 'cons'
+    return print(unparse(eval(parse(s))))

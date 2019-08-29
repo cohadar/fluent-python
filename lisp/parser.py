@@ -1,28 +1,55 @@
 """
-Parser for LISP s expressions, returns nested lists of with string atoms
-
->>> parse('()')
-[]
-
->>> parse('(foo)')
-['foo']
-
->>> parse('(foo bar)')
-['foo', 'bar']
-
->>> parse('((foo))')
-[['foo']]
-
->>> parse('(cdr (cons (quote a) (quote (b c))))')
-['cdr', ['cons', ['quote', 'a'], ['quote', ['b', 'c']]]]
+Parser and unparser for LISP s-expressions
 """
 
 
 def parse(s):
-    return Tokens(s).parse_expr()
+    """
+    parse s-expression string into nested atom lists
+    >>> parse('()')
+    []
+
+    >>> parse('(foo)')
+    ['foo']
+
+    >>> parse('(foo bar)')
+    ['foo', 'bar']
+
+    >>> parse('((foo))')
+    [['foo']]
+
+    >>> parse('(cdr (cons (quote a) (quote (b c))))')
+    ['cdr', ['cons', ['quote', 'a'], ['quote', ['b', 'c']]]]
+    """
+    return _Tokens(s).parse_expr()
 
 
-class Tokens():
+def unparse(e):
+    """
+    convert nested atom list to s-expression string
+    >>> unparse([])
+    '()'
+
+    >>> unparse(['foo'])
+    '(foo)'
+
+    >>> unparse(['foo', 'bar'])
+    '(foo bar)'
+
+    >>> unparse([['foo']])
+    '((foo))'
+
+    >>> unparse(['cdr', ['cons', ['quote', 'a'], ['quote', ['b', 'c']]]])
+    '(cdr (cons (quote a) (quote (b c))))'
+    """
+    assert e is not None
+    if isinstance(e, str):
+        return e
+    else:
+        return "({})".format(" ".join([unparse(v) for v in e]))
+
+
+class _Tokens():
     def __init__(self, s):
         self.tokens = list(tokenize(s))
         self.tokens.append('(EOL)')
@@ -71,6 +98,18 @@ class Tokens():
 
 def tokenize(s):
     """
+    >>> list(tokenize('()'))
+    ['(', ')']
+
+    >>> list(tokenize('foo'))
+    ['foo']
+
+    >>> list(tokenize('(foo)'))
+    ['(', 'foo', ')']
+
+    >>> list(tokenize('(foo bar)'))
+    ['(', 'foo', 'bar', ')']
+
     >>> list(tokenize('(cdr (quote (a b c)))'))
     ['(', 'cdr', '(', 'quote', '(', 'a', 'b', 'c', ')', ')', ')']
     """
