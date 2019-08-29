@@ -30,72 +30,72 @@ True
 (a b (c) d)
 
 # quote operator
->>> x = li(quote, a); print(x); peval(x)
+>>> x = li(quote, a); prepr(x); peval(x)
 (quote a)
 a
 
->>> x = li(quote, li(a, b, c)); print(x); peval(x)
+>>> x = li(quote, li(a, b, c)); prepr(x); peval(x)
 (quote (a b c))
 (a b c)
 
 # atom operator
->>> x = li(atom, qu(a)); print(x); peval(x)
+>>> x = li(atom, qu(a)); prepr(x); peval(x)
 (atom (quote a))
 t
 
->>> x = li(atom, qu(li(a, b, c))); print(x); peval(x)
+>>> x = li(atom, qu(li(a, b, c))); prepr(x); peval(x)
 (atom (quote (a b c)))
 ()
 
->>> x = li(atom, qu(nil)); print(x); peval(x)
+>>> x = li(atom, qu(nil)); prepr(x); peval(x)
 (atom (quote ()))
 t
 
->>> x = li(atom, li(atom, qu(a))); print(x); peval(x)
+>>> x = li(atom, li(atom, qu(a))); prepr(x); peval(x)
 (atom (atom (quote a)))
 t
 
->>> x = li(atom, qu(li(atom, qu(a)))); print(x); peval(x)
+>>> x = li(atom, qu(li(atom, qu(a)))); prepr(x); peval(x)
 (atom (quote (atom (quote a))))
 ()
 
 # eq operator
->>> x = li(eq, qu(a), qu(a)); print(x); peval(x)
+>>> x = li(eq, qu(a), qu(a)); prepr(x); peval(x)
 (eq (quote a) (quote a))
 t
 
->>> x = li(eq, qu(a), qu(b)); print(x); peval(x)
+>>> x = li(eq, qu(a), qu(b)); prepr(x); peval(x)
 (eq (quote a) (quote b))
 ()
 
->>> x = li(eq, qu(nil), qu(nil)); print(x); peval(x)
+>>> x = li(eq, qu(nil), qu(nil)); prepr(x); peval(x)
 (eq (quote ()) (quote ()))
 t
 
 # car operator
->>> x = li(car, qu(li(a, b, c))); print(x); peval(x)
+>>> x = li(car, qu(li(a, b, c))); prepr(x); peval(x)
 (car (quote (a b c)))
 a
 
 # cdr operator
->>> x = li(cdr, qu(li(a, b, c))); print(x); peval(x)
+>>> x = li(cdr, qu(li(a, b, c))); prepr(x); peval(x)
 (cdr (quote (a b c)))
 (b c)
 
 # cons operator
->>> x = li(cons, qu(a), qu(li(b, c))); print(x); peval(x)
+>>> x = li(cons, qu(a), qu(li(b, c))); prepr(x); peval(x)
 (cons (quote a) (quote (b c)))
 (a b c)
 
->>> x = li(cons, qu(a), li(cons, qu(b), li(cons, qu(c), qu(nil)))); print(x); peval(x)
+>>> x = li(cons, qu(a), li(cons, qu(b), li(cons, qu(c), qu(nil)))); prepr(x); peval(x)
 (cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))
 (a b c)
 
->>> x = li(car, li(cons, qu(a), qu(li(b, c)))); print(x); peval(x)
+>>> x = li(car, li(cons, qu(a), qu(li(b, c)))); prepr(x); peval(x)
 (car (cons (quote a) (quote (b c))))
 a
 
->>> x = li(cdr, li(cons, qu(a), qu(li(b, c)))); print(x); peval(x)
+>>> x = li(cdr, li(cons, qu(a), qu(li(b, c)))); prepr(x); peval(x)
 (cdr (cons (quote a) (quote (b c))))
 (b c)
 """
@@ -206,8 +206,12 @@ def eval(e, a=nil):
     raise ValueError('NYI')
 
 
+def prepr(e):
+    print(_repr(e))
+
+
 def peval(e):
-    print(eval(e))
+    prepr(eval(e))
 
 
 ##############################################################################
