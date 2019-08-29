@@ -80,7 +80,7 @@ first
          (quote (a b c)))')
 (z b c)
 
->>> pp('((lambda (f) (f (quote (b c))))
+>>> pp('((lambda (f) (f (quote (b c)))) \
          (quote (lambda (x) (cons (quote a) x))))')
 (a b c)
 """
@@ -152,8 +152,16 @@ def eval(e, a=[]):
         else:
             raise ValueError('NYI: {}'.format(e[0]))
     elif e[0][0] == 'lambda':
-        return ['a', 'b']
+        params = e[0][1]
+        body = e[0][2]
+        args = [eval(arg) for arg in e[1:]]
+        return eval(subst(body, params, args))
     raise ValueError('NYI')
+
+
+def subst(body, params, args):
+    # TODO
+    return []
 
 
 def pp(s):
