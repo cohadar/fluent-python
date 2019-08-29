@@ -138,29 +138,29 @@ def eval(e, a=[]):
             return e[1]
         elif str(e[0]) == 'atom':
             # what is atom has wrong number of args?
-            el2 = eval(e[1])
-            return t if _isAtom(el2) else []
+            arg1 = eval(e[1])
+            return t if _isAtom(arg1) else []
         elif str(e[0]) == 'eq':
             # what if eq has wrong number of args?
-            el2 = eval(e[1])
-            el3 = eval(e[2])
-            return t if el2 == el3 else []
+            arg1 = eval(e[1])
+            arg2 = eval(e[2])
+            return t if arg1 == arg2 else []
         elif str(e[0]) == 'car':
             # what if car has wrong number of args?
-            el2 = eval(e[1])
-            # what if el2 is not a list?
-            return el2[0]
+            arg1 = eval(e[1])
+            # what if arg1 is not a list?
+            return arg1[0]
         elif str(e[0]) == 'cdr':
             # what if cdr has wrong number of args?
-            el2 = eval(e[1])
-            # what if el2 is not a list?
-            return el2[1:]
+            arg1 = eval(e[1])
+            # what if arg1 is not a list?
+            return arg1[1:]
         elif str(e[0]) == 'cons':
             # what if cons has wrong number of args?
-            el2 = eval(e[1])
-            el3 = eval(e[2])
-            ret = [el2]
-            ret.extend(el3)
+            arg1 = eval(e[1])
+            arg2 = eval(e[2])
+            ret = [arg1]
+            ret.extend(arg2)
             return ret
         else:
             raise ValueError('NYI: {}'.format(e[0]))
