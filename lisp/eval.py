@@ -116,18 +116,6 @@ def _repr(e):
         return "({})".format(" ".join([_repr(v) for v in e]))
 
 
-def _head(e):
-    assert e is not None
-    assert isinstance(e, list)
-    return e[0]
-
-
-def _tail(e):
-    assert e is not None
-    assert isinstance(e, list)
-    return list(e[1:])
-
-
 def qu(e):
     """
     >>> prepr(qu(a))
@@ -143,39 +131,39 @@ def eval(e, a=[]):
     assert isinstance(a, str) or isinstance(a, list)
     if isinstance(e, str):
         return e
-    if isinstance(_head(e), str):
-        if str(_head(e)) == 'quote':
+    if isinstance(e[0], str):
+        if str(e[0]) == 'quote':
             # what is quote has wrong number of args?
             # note quote does not do argument eval!
-            return _head(_tail(e))
-        elif str(_head(e)) == 'atom':
+            return e[1]
+        elif str(e[0]) == 'atom':
             # what is atom has wrong number of args?
-            el2 = eval(_head(_tail(e)))
+            el2 = eval(e[1])
             return t if _isAtom(el2) else []
-        elif str(_head(e)) == 'eq':
+        elif str(e[0]) == 'eq':
             # what if eq has wrong number of args?
-            el2 = eval(_head(_tail(e)))
-            el3 = eval(_head(_tail(_tail(e))))
+            el2 = eval(e[1])
+            el3 = eval(e[2])
             return t if el2 == el3 else []
-        elif str(_head(e)) == 'car':
+        elif str(e[0]) == 'car':
             # what if car has wrong number of args?
-            el2 = eval(_head(_tail(e)))
+            el2 = eval(e[1])
             # what if el2 is not a list?
-            return _head(el2)
-        elif str(_head(e)) == 'cdr':
+            return el2[0]
+        elif str(e[0]) == 'cdr':
             # what if cdr has wrong number of args?
-            el2 = eval(_head(_tail(e)))
+            el2 = eval(e[1])
             # what if el2 is not a list?
-            return _tail(el2)
-        elif str(_head(e)) == 'cons':
+            return el2[1:]
+        elif str(e[0]) == 'cons':
             # what if cons has wrong number of args?
-            el2 = eval(_head(_tail(e)))
-            el3 = eval(_head(_tail(_tail(e))))
+            el2 = eval(e[1])
+            el3 = eval(e[2])
             ret = [el2]
             ret.extend(el3)
             return ret
         else:
-            raise ValueError('NYI: {}'.format(_head(e)))
+            raise ValueError('NYI: {}'.format(e[0]))
     raise ValueError('NYI')
 
 
