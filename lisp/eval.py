@@ -16,22 +16,9 @@ Every LISP data object has 3 properties:
 # t
 
 
-### label-ed function
-# >>> pp('((label f (lambda (x) (cons x f))) \
-#          (quote foo))')
-# (foo label f (lambda (x) (cons x f)))
-
-# ### recursive function
-# >>> pp('((label subst (lambda (x y z) \
-#                        (cond ((atom z) \
-#                               (cond ((eq z y) x) \
-#                                     ((quote t) z))) \
-#                              ((quote t) (cons (subst x y (car z)) \
-#                                               (subst x y (cdr z))))))) \
-#              (quote m) (quote b) (quote (a b (a b c) d)))')
-# (a m (a m c) d)
 """
 
+import copy
 from s_parser import parse, unparse
 
 
@@ -344,23 +331,40 @@ def lambda_(e, context):
         if not isinstance(param, str):
             raise ValueError('invalid parameter: ' + unparse(param))
     args = [eval(arg, context) for arg in args]
-    context = dict(context)
-    context.update(zip(params, args))
+    context = copy.deepcopy(context)
+    context.update_vars(zip(params, args))
     ret = ()
     for body in decl[2:]:
         ret = eval(body, context)
     return ret
 
 
+def defun(e, context):
+    """
+    define a function
+    >>> context = Context(); pp('(defun madd (a b) (cons a (cons b ())))', context); \
+        pp('(madd (quote x) (quote y))', context)
+    (x y)
+    """
+    # TODO cornercases
+    decl = e[0]
+    assert decl[0] == 'label'
+    name = decl[1]
+    lam = decl[2]
+    args = e[1:]
+    context.update_vars({name: lam})
+    return lambda_(((lam,),) + tuple(args), context)
+
+
 def eval(e, context):
     if e == ():
         return e
     if context is None:
-        context = {}
+        context = Context()
     assert isinstance(e, str) or isinstance(e, tuple)
-    assert isinstance(context, dict)
+    assert isinstance(context, Context)
     if isinstance(e, str):
-        return from_context(context, e)
+        return context.get_var(e)
     if isinstance(e[0], str):
         if e[0] == 'quote':
             return quote(e[1:], context)
@@ -380,27 +384,37 @@ def eval(e, context):
             raise ValueError('undefined function: ' + str(e[0]))
     elif e[0][0] == 'lambda':
         return lambda_(e, context)
-    elif e[0][0] == 'label':
-        name = e[0][1]
-        decl = e[0][2]
-        params = decl[1]
-        body = decl[2]
-        args = [eval(arg, context) for arg in e[1:]]
-        context.update(zip(params, args))
-        context.update([[name, e[0]]])
-        return eval(body, context)
-    raise ValueError('NYI: ' + str(e))
+    elif e[0][0] == 'defun':
+        return defun(e, context)
+    raise ValueError('NYI: ' + unparse(e))
 
 
-def from_context(context, atom):
-    assert isinstance(atom, str)
-    if context is None:
-        raise ValueError('unknown variable: ' + atom)
-    elif atom in context:
-        return context[atom]
-    raise ValueError('unknown variable: ' + atom)
+def pp(s, context=None):
+    return print(unparse(eval(parse(s), context)))
 
 
-def pp(s):
-    # return print(unparse(eval(parse(s), {'t': 't'})))
-    return print(unparse(eval(parse(s), {})))
+class Context():
+    def __init__(self, var_context=None, func_context=None):
+        self.var_context = var_context if var_context is not None else {}
+        self.func_context = func_context if func_context is not None else {}
+
+    def get_var(self, key):
+        assert isinstance(key, str)
+        ret = self.var_context.get(key, None)
+        if ret:
+            return ret
+        raise ValueError('unknown variable: ' + key)
+
+    def get_func(self, key):
+        assert isinstance(key, str)
+        ret = self.func_context.get(key, None)
+        if ret:
+            return ret
+        raise ValueError('undefined function: ' + key)
+
+    def update_vars(self, d):
+        self.var_context.update(d)
+
+    def update_funcs(self, d):
+        self.func_context.update(d)
+
