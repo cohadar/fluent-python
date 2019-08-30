@@ -15,21 +15,6 @@ Every LISP data object has 3 properties:
 # >>> pp('(cond (t))')
 # t
 
-### lambda
-# >>> pp('((lambda () (quote foo)))')
-# foo
-
-# >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
-# (a b)
-
-# >>> pp('((lambda (x y) (cons x (cdr y))) \
-#          (quote z)                       \
-#          (quote (a b c)))')
-# (z b c)
-
-# >>> pp('((lambda (f) (f (quote (b c)))) \
-#          (quote (lambda (x) (cons (quote a) x))))')
-# (a b c)
 
 ### label-ed function
 # >>> pp('((label f (lambda (x) (cons x f))) \
@@ -305,6 +290,35 @@ def cond(params, context):
     return ()
 
 
+def lambda_(e, context):
+    """
+    LAMBDA function
+    >>> pp('((lambda () (quote foo)))')
+    foo
+
+    >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
+    (a b)
+
+    # >>> pp('((lambda (x y) (cons x (cdr y))) \
+    #          (quote z)                       \
+    #          (quote (a b c)))')
+    # (z b c)
+
+    # >>> pp('((lambda (f) (f (quote (b c)))) \
+    #          (quote (lambda (x) (cons (quote a) x))))')
+    # (a b c)
+    """
+    # TODO: corner cases
+    decl = e[0]
+    assert decl[0] == 'lambda'
+    params = decl[1]
+    body = decl[2]
+    args = [eval(arg, context) for arg in e[1:]]
+    context = dict(context)
+    context.update(zip(params, args))
+    return eval(body, context)
+
+
 def eval(e, context):
     if e == ():
         return e
@@ -312,8 +326,8 @@ def eval(e, context):
         context = {}
     assert isinstance(e, str) or isinstance(e, tuple)
     assert isinstance(context, dict)
-    # if isinstance(e, str):
-    #     return from_context(context, e)
+    if isinstance(e, str):
+        return from_context(context, e)
     if isinstance(e[0], str):
         if e[0] == 'quote':
             return quote(e[1:], context)
@@ -339,12 +353,7 @@ def eval(e, context):
             #         raise ValueError('symbols cannot be operators: ' + str(s))
             # return eval((s,) + e[1:], context)
     elif e[0][0] == 'lambda':
-        decl = e[0]
-        params = decl[1]
-        body = decl[2]
-        args = [eval(arg, context) for arg in e[1:]]
-        context.update(zip(params, args))
-        return eval(body, context)
+        return lambda_(e, context)
     elif e[0][0] == 'label':
         name = e[0][1]
         decl = e[0][2]
@@ -363,7 +372,7 @@ def from_context(context, atom):
         raise ValueError('unknown variable: ' + atom)
     elif atom in context:
         return context[atom]
-    raise ValueError('unknown variable: {}\ncontext: {}'.format(atom, context))
+    raise ValueError('unknown variable: ' + atom)
 
 
 def pp(s):
