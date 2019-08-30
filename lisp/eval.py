@@ -344,16 +344,15 @@ def defun(e, context):
     define a function
     >>> context = Context(); pp('(defun madd (a b) (cons a (cons b ())))', context); \
         pp('(madd (quote x) (quote y))', context)
+    madd
     (x y)
     """
-    # TODO cornercases
-    decl = e[0]
-    assert decl[0] == 'label'
-    name = decl[1]
-    lam = decl[2]
-    args = e[1:]
-    context.update_vars({name: lam})
-    return lambda_(((lam,),) + tuple(args), context)
+    # TODO: cornercases
+    name = e[0]
+    newe = ['lambda']
+    newe += e[1:]
+    context.update_funcs({name: tuple(newe)})
+    return name
 
 
 def eval(e, context):
@@ -380,12 +379,14 @@ def eval(e, context):
             return cons(e[1:], context)
         elif e[0] == 'cond':
             return cond(e[1:], context)
+        elif e[0] == 'defun':
+            return defun(e[1:], context)
         else:
-            raise ValueError('undefined function: ' + str(e[0]))
+            newe = [context.get_func(e[0])]
+            newe += e[1:]
+            return eval(tuple(newe), context)
     elif e[0][0] == 'lambda':
         return lambda_(e, context)
-    elif e[0][0] == 'defun':
-        return defun(e, context)
     raise ValueError('NYI: ' + unparse(e))
 
 
