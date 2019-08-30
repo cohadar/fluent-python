@@ -5,41 +5,41 @@ Parser and unparser for LISP s-expressions
 
 def parse(s):
     """
-    parse s-expression string into nested atom lists
+    parse s-expression string into nested atom tuple
     >>> parse('()')
-    []
+    ()
 
     >>> parse('(foo)')
-    ['foo']
+    ('foo',)
 
     >>> parse('(foo bar)')
-    ['foo', 'bar']
+    ('foo', 'bar')
 
     >>> parse('((foo))')
-    [['foo']]
+    (('foo',),)
 
     >>> parse('(cdr (cons (quote a) (quote (b c))))')
-    ['cdr', ['cons', ['quote', 'a'], ['quote', ['b', 'c']]]]
+    ('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c'))))
     """
     return _Tokens(s).parse_expr()
 
 
 def unparse(e):
     """
-    convert nested atom list to s-expression string
-    >>> unparse([])
+    convert nested atom tuple to s-expression string
+    >>> unparse(())
     '()'
 
-    >>> unparse(['foo'])
+    >>> unparse(('foo',))
     '(foo)'
 
-    >>> unparse(['foo', 'bar'])
+    >>> unparse(('foo', 'bar'))
     '(foo bar)'
 
-    >>> unparse([['foo']])
+    >>> unparse((('foo',),))
     '((foo))'
 
-    >>> unparse(['cdr', ['cons', ['quote', 'a'], ['quote', ['b', 'c']]]])
+    >>> unparse(('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c')))))
     '(cdr (cons (quote a) (quote (b c))))'
     """
     assert e is not None
@@ -68,7 +68,7 @@ class _Tokens():
     def parse_expr(self):
         if self.head() == '(':
             self._next()
-            return self.parse_elist()
+            return self.parse_etuple()
         elif self.head() == ')':
             raise ValueError('unmatched ")"')
         elif self.head() == '(EOL)':
@@ -78,22 +78,21 @@ class _Tokens():
                 raise ValueError('extra stuff after expression')
             return self.head()
 
-    def parse_elist(self):
+    def parse_etuple(self):
         if self.head() == '(':
             self._next()
-            ret = [self.parse_elist()]
+            ret = (self.parse_etuple(),)
             self._close()
-            ret.extend(self.parse_elist())
+            return ret + self.parse_etuple()
             return ret
         elif self.head() == ')':
-            return []
+            return tuple()
         elif self.head() == '(EOL)':
             raise ValueError('premature EOL')
         else:
-            ret = [self.head()]
+            ret = (self.head(),)
             self._next()
-            ret.extend(self.parse_elist())
-            return ret
+            return ret + self.parse_etuple()
 
 
 def tokenize(s):

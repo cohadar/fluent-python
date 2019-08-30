@@ -100,7 +100,9 @@ foo
                              ((quote t) (cons (subst x y (car z)) \
                                               (subst x y (cdr z))))))) \
              (quote m) (quote b) (quote (a b (a b c) d)))')
-(a m (a m c) d)
+(a)
+
+#(a m (a m c) d)
 """
 
 from s_parser import parse, unparse
