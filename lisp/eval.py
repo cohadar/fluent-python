@@ -4,64 +4,6 @@ Every LISP data object has 3 properties:
 * type - str or tuple
 * value - for str self, for tuple id
 
-### quote operator
->>> pp('(quote a)')
-a
-
->>> pp('(quote (a b c))')
-(a b c)
-
->>> pp('(quote)')
-Traceback (most recent call last):
-ValueError: wrong numbers of params for QUOTE
-
->>> pp('(quote a b c)')
-Traceback (most recent call last):
-ValueError: wrong numbers of params for QUOTE
-
-### atom operator
->>> pp('(atom (quote a))')
-t
-
->>> pp('(atom (quote (a b c)))')
-()
-
->>> pp('(atom (quote ()))')
-t
-
->>> pp('(atom (atom (quote a)))')
-t
-
->>> pp('(atom (quote (atom (quote a))))')
-()
-
->>> pp('(atom)')
-Traceback (most recent call last):
-ValueError: wrong numbers of params for ATOM
-
->>> pp('(atom (quote a) (quote a))')
-Traceback (most recent call last):
-ValueError: wrong numbers of params for ATOM
-
-### eq operator
->>> pp('(eq (quote a) (quote a))')
-t
-
->>> pp('(eq (quote a) (quote b))')
-()
-
->>> pp('(eq (quote ()) (quote ()))')
-t
-
->>> pp('(eq (quote a))')
-Traceback (most recent call last):
-ValueError: wrong numbers of params for EQ
-
->>> pp('(eq (quote a) (quote a) (quote a))')
-Traceback (most recent call last):
-ValueError: wrong numbers of params for EQ
-
-
 ### cdr operator
 >>> pp('(cdr (quote (a b c)))')
 (b c)
@@ -140,19 +82,99 @@ foo
 from s_parser import parse, unparse
 
 
-def _isAtom(e):
+def quote(params, context):
     """
-    >>> _isAtom('foo')
-    True
+    QUOTE operator.
+    note that quote does not do argument eval!
+    >>> pp('(quote a)')
+    a
 
-    >>> _isAtom(())
-    True
+    >>> pp('(quote (a b c))')
+    (a b c)
 
-    >>> _isAtom(('foo',))
-    False
+    >>> pp('(quote)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for QUOTE
+
+    >>> pp('(quote a b c)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for QUOTE
     """
-    assert e is not None
-    return isinstance(e, str) or e == ()
+    if len(params) != 1:
+        raise ValueError('wrong numbers of params for QUOTE')
+    return params[0]
+
+
+def atom(params, context):
+    """
+    ATOM operator.
+    >>> pp('(atom (quote a))')
+    t
+
+    >>> pp('(atom (quote (a b c)))')
+    ()
+
+    >>> pp('(atom (quote ()))')
+    t
+
+    >>> pp('(atom (atom (quote a)))')
+    t
+
+    >>> pp('(atom (quote (atom (quote a))))')
+    ()
+
+    >>> pp('(atom)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for ATOM
+
+    >>> pp('(atom (quote a) (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for ATOM
+    """
+    if len(params) != 1:
+        raise ValueError('wrong numbers of params for ATOM')
+    arg1 = eval(params[0], context)
+    return 't' if isinstance(arg1, str) or arg1 == () else ()
+
+
+def eq(params, context):
+    """
+    EQ operator.
+    returns 't' if both args are same string or both are empty lists, else ()
+    >>> pp('(eq (quote a) (quote a))')
+    t
+
+    >>> pp('(eq (quote a) (quote b))')
+    ()
+
+    >>> pp('(eq (quote ()) (quote ()))')
+    t
+
+    >>> pp('(eq (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for EQ
+
+    >>> pp('(eq (quote a) (quote a) (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for EQ
+    """
+    if len(params) != 2:
+        raise ValueError('wrong numbers of params for EQ')
+    arg1 = eval(params[0], context)
+    arg2 = eval(params[1], context)
+    if isinstance(arg1, str):
+        if isinstance(arg2, str):
+            return 't' if arg1 == arg2 else ()
+        else:
+            return ()
+    else:
+        if isinstance(arg2, str):
+            return ()
+        else:
+            if arg1 == () and arg2 == ():
+                return 't'
+            else:
+                return id(arg1) == id(arg2)
 
 
 def car(params, context):
@@ -198,33 +220,11 @@ def eval(e, context):
         return from_context(context, e[0])
     if isinstance(e[0], str):
         if e[0] == 'quote':
-            if len(e) != 2:
-                raise ValueError('wrong numbers of params for QUOTE')
-            # note quote does not do argument eval!
-            return e[1]
+            return quote(e[1:], context)
         elif e[0] == 'atom':
-            if len(e) != 2:
-                raise ValueError('wrong numbers of params for ATOM')
-            arg1 = eval(e[1], context)
-            return 't' if _isAtom(arg1) else ()
+            return atom(e[1:], context)
         elif e[0] == 'eq':
-            if len(e) != 3:
-                raise ValueError('wrong numbers of params for EQ')
-            arg1 = eval(e[1], context)
-            arg2 = eval(e[2], context)
-            if isinstance(arg1, str):
-                if isinstance(arg2, str):
-                    return 't' if arg1 == arg2 else ()
-                else:
-                    return ()
-            else:
-                if isinstance(arg2, str):
-                    return ()
-                else:
-                    if arg1 == () and arg2 == ():
-                        return 't'
-                    else:
-                        return id(arg1) == id(arg2)
+            return eq(e[1:], context)
         elif e[0] == 'car':
             return car(e[1:], context)
         elif e[0] == 'cdr':
