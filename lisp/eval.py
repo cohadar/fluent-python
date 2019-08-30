@@ -299,24 +299,57 @@ def lambda_(e, context):
     >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
     (a b)
 
-    # >>> pp('((lambda (x y) (cons x (cdr y))) \
-    #          (quote z)                       \
-    #          (quote (a b c)))')
-    # (z b c)
+    >>> pp('((lambda (x y) (cons x (cdr y))) \
+             (quote z)                       \
+             (quote (a b c)))')
+    (z b c)
 
-    # >>> pp('((lambda (f) (f (quote (b c)))) \
-    #          (quote (lambda (x) (cons (quote a) x))))')
-    # (a b c)
+    >>> pp('((lambda (f) (f (quote (b c)))) (quote (lambda (x) (cons (quote a) x))))')
+    Traceback (most recent call last):
+    ValueError: undefined function: f
+
+    >>> pp('((lambda ((x)) (cons x (quote (b)))) (quote a))')
+    Traceback (most recent call last):
+    ValueError: invalid parameter: (x)
+
+    >>> pp('((lambda x (cons x (quote (b)))) (quote a))')
+    Traceback (most recent call last):
+    ValueError: params should be a list, not: x
+
+    >>> pp('((lambda (x) (cons x (quote (b))) (quote t)) (quote a))')
+    t
+
+    >>> pp('((lambda (x) ) (quote a))')
+    ()
+
+    >>> pp('((lambda (x) (cons x (quote (b)))) (quote a) (quote b))')
+    Traceback (most recent call last):
+    ValueError: too many arguments given to LAMBDA
+
+    >>> pp('((lambda (x) (cons x (quote (b)))) )')
+    Traceback (most recent call last):
+    ValueError: too few arguments given to LAMBDA
     """
-    # TODO: corner cases
     decl = e[0]
     assert decl[0] == 'lambda'
     params = decl[1]
-    body = decl[2]
-    args = [eval(arg, context) for arg in e[1:]]
+    args = e[1:]
+    if isinstance(params, str):
+        raise ValueError('params should be a list, not: ' + unparse(params))
+    if len(params) < len(args):
+        raise ValueError('too many arguments given to LAMBDA')
+    if len(params) > len(args):
+        raise ValueError('too few arguments given to LAMBDA')
+    for param in params:
+        if not isinstance(param, str):
+            raise ValueError('invalid parameter: ' + unparse(param))
+    args = [eval(arg, context) for arg in args]
     context = dict(context)
     context.update(zip(params, args))
-    return eval(body, context)
+    ret = ()
+    for body in decl[2:]:
+        ret = eval(body, context)
+    return ret
 
 
 def eval(e, context):
@@ -344,14 +377,7 @@ def eval(e, context):
         elif e[0] == 'cond':
             return cond(e[1:], context)
         else:
-            raise ValueError('Variables NYI: ' + str(e))
-            # s = from_context(context, e[0])
-            # if s == e[0]:
-            #     if len(e) == 1:
-            #         return s
-            #     else:
-            #         raise ValueError('symbols cannot be operators: ' + str(s))
-            # return eval((s,) + e[1:], context)
+            raise ValueError('undefined function: ' + str(e[0]))
     elif e[0][0] == 'lambda':
         return lambda_(e, context)
     elif e[0][0] == 'label':
