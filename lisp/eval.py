@@ -5,20 +5,6 @@ Every LISP data object has 3 properties:
 * value - for str self, for tuple id
 
 
-
-### cond operator
->>> pp('(cond ((eq (quote a) (quote b)) (quote first)) \
-              ((atom (quote a)) (quote second)))')
-second
-
->>> pp('(cond ((eq (quote a) (quote a)) (quote first)) \
-              ((atom (quote a)) (quote second)))')
-first
-
->>> pp('(cond (() (quote first)) \
-              (() (quote second)))')
-()
-
 ### t symbol in context
 >>> pp('t')
 t
@@ -259,6 +245,66 @@ def cons(params, context):
     return (arg1,) + arg2
 
 
+def cond(params, context):
+    """
+    COND operator.
+    lazy conditional execution of pair alternatives
+    >>> pp('(cond \
+                ((eq(quote a)(quote b)) \
+                    (quote first)) \
+                ((atom(quote a)) \
+                    (quote second)))')
+    second
+
+    >>> pp('(cond \
+                ((eq(quote a)(quote a)) \
+                    (quote first)) \
+                ((atom (quote a)) \
+                    (quote second)))')
+    first
+
+    >>> pp('(cond \
+                (() \
+                    (quote first)) \
+                (() \
+                    (quote second)))')
+    ()
+
+    >>> pp('(cond \
+                (() \
+                    (quote first)) \
+                ((quote t) \
+                    (quote second)))')
+    second
+
+    >>> pp('(cond)')
+    ()
+
+    >>> pp('(cond (t))')
+    t
+
+    >>> pp('(cond ((quote t)))')
+    t
+
+    >>> pp('(cond t)')
+    Traceback (most recent call last):
+    ValueError: COND clause must be a list
+    """
+    # what if cond is not composed of pairs?
+    # is it correct to return () if no pair matches?
+    for clause in params:
+        if not isinstance(clause, tuple):
+            raise ValueError('COND clause must be a list')
+        if clause == ():
+            raise ValueError('COND clause cannot be empty list')
+        ret = eval(clause[0], context)
+        if ret == 't':
+            for exp in clause[1:]:
+                ret = eval(exp, context)
+            return ret
+    return ()
+
+
 def eval(e, context):
     if e == ():
         return e
@@ -282,17 +328,14 @@ def eval(e, context):
         elif e[0] == 'cons':
             return cons(e[1:], context)
         elif e[0] == 'cond':
-            # what if cond is not composed of pairs?
-            # is it correct to return () if no pair matches?
-            # note cond does lazy evaluation!
-            for cond, expr in e[1:]:
-                if eval(cond, dict(context)) == 't':
-                    return eval(expr, context)
-            return []
+            return cond(e[1:], context)
         else:
             s = from_context(context, e[0])
             if s == e[0]:
-                raise ValueError('symbols cannot be operators: ' + str(s))
+                if len(e) == 1:
+                    return s
+                else:
+                    raise ValueError('symbols cannot be operators: ' + str(s))
             return eval((s,) + e[1:], context)
     elif e[0][0] == 'lambda':
         decl = e[0]
