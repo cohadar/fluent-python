@@ -5,18 +5,6 @@ Every LISP data object has 3 properties:
 * value - for str self, for tuple id
 
 
-### cons operator
->>> pp('(cons (quote a) (quote (b c)))')
-(a b c)
-
->>> pp('(cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))')
-(a b c)
-
->>> pp('(car (cons (quote a) (quote (b c))))')
-a
-
->>> pp('(cdr (cons (quote a) (quote (b c))))')
-(b c)
 
 ### cond operator
 >>> pp('(cond ((eq (quote a) (quote b)) (quote first)) \
@@ -234,6 +222,43 @@ def cdr(params, context):
     return arg1[1:]
 
 
+def cons(params, context):
+    """
+    CONS operator.
+    append item to the head of the list
+    >>> pp('(cons (quote a) (quote (b c)))')
+    (a b c)
+
+    >>> pp('(cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))')
+    (a b c)
+
+    >>> pp('(car (cons (quote a) (quote (b c))))')
+    a
+
+    >>> pp('(cdr (cons (quote a) (quote (b c))))')
+    (b c)
+
+    >>> pp('(cons (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CONS
+
+    >>> pp('(cons (quote a) (quote a) (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CONS
+
+    >>> pp('(cons (quote a) (quote b))')
+    Traceback (most recent call last):
+    ValueError: not a list: b
+    """
+    if len(params) != 2:
+        raise ValueError('wrong numbers of params for CONS')
+    arg1 = eval(params[0], context)
+    arg2 = eval(params[1], context)
+    if not isinstance(arg2, tuple):
+        raise ValueError('not a list: ' + str(arg2))
+    return (arg1,) + arg2
+
+
 def eval(e, context):
     if e == ():
         return e
@@ -255,12 +280,7 @@ def eval(e, context):
         elif e[0] == 'cdr':
             return cdr(e[1:], context)
         elif e[0] == 'cons':
-            # what if cons has wrong number of args?
-            arg1 = eval(e[1], context)
-            arg2 = eval(e[2], context)
-            if not isinstance(arg2, tuple):
-                raise ValueError('bad (cons {} "{}")'.format(arg1, arg2))
-            return (arg1,) + arg2
+            return cons(e[1:], context)
         elif e[0] == 'cond':
             # what if cond is not composed of pairs?
             # is it correct to return () if no pair matches?
