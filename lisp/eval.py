@@ -11,6 +11,14 @@ a
 >>> pp('(quote (a b c))')
 (a b c)
 
+>>> pp('(quote)')
+Traceback (most recent call last):
+ValueError: wrong numbers of params for QUOTE
+
+>>> pp('(quote a b c)')
+Traceback (most recent call last):
+ValueError: wrong numbers of params for QUOTE
+
 ### atom operator
 >>> pp('(atom (quote a))')
 t
@@ -27,6 +35,14 @@ t
 >>> pp('(atom (quote (atom (quote a))))')
 ()
 
+>>> pp('(atom)')
+Traceback (most recent call last):
+ValueError: wrong numbers of params for ATOM
+
+>>> pp('(atom (quote a) (quote a))')
+Traceback (most recent call last):
+ValueError: wrong numbers of params for ATOM
+
 ### eq operator
 >>> pp('(eq (quote a) (quote a))')
 t
@@ -37,9 +53,14 @@ t
 >>> pp('(eq (quote ()) (quote ()))')
 t
 
-### car operator
->>> pp('(car (quote (a b c)))')
-a
+>>> pp('(eq (quote a))')
+Traceback (most recent call last):
+ValueError: wrong numbers of params for EQ
+
+>>> pp('(eq (quote a) (quote a) (quote a))')
+Traceback (most recent call last):
+ValueError: wrong numbers of params for EQ
+
 
 ### cdr operator
 >>> pp('(cdr (quote (a b c)))')
@@ -106,14 +127,14 @@ foo
 (foo label f (lambda (x) (cons x f)))
 
 ### recursive function
->>> pp('((label subst (lambda (x y z) \
-                       (cond ((atom z) \
-                              (cond ((eq z y) x) \
-                                    ((quote t) z))) \
-                             ((quote t) (cons (subst x y (car z)) \
-                                              (subst x y (cdr z))))))) \
-             (quote m) (quote b) (quote (a b (a b c) d)))')
-(a m (a m c) d)
+# >>> pp('((label subst (lambda (x y z) \
+#                        (cond ((atom z) \
+#                               (cond ((eq z y) x) \
+#                                     ((quote t) z))) \
+#                              ((quote t) (cons (subst x y (car z)) \
+#                                               (subst x y (cdr z))))))) \
+#              (quote m) (quote b) (quote (a b (a b c) d)))')
+# (a m (a m c) d)
 """
 
 from s_parser import parse, unparse
@@ -134,6 +155,38 @@ def _isAtom(e):
     return isinstance(e, str) or e == ()
 
 
+def car(params, context):
+    """
+    CAR operator.
+    returns the head of the list or nil
+    >>> pp('(car (quote (a b c)))')
+    a
+
+    >>> pp('(car (quote ()))')
+    ()
+
+    >>> pp('(car (quote x))')
+    Traceback (most recent call last):
+    ValueError: not a list: x
+
+    >>> pp('(car (quote x) (quote x))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CAR
+
+    >>> pp('(car)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CAR
+    """
+    if len(params) != 1:
+        raise ValueError('wrong numbers of params for CAR')
+    arg1 = eval(params[0], context)
+    if not isinstance(arg1, tuple):
+        raise ValueError('not a list: ' + str(arg1))
+    if arg1 == ():
+        return ()
+    return arg1[0]
+
+
 def eval(e, context):
     if e == ():
         return e
@@ -145,15 +198,18 @@ def eval(e, context):
         return from_context(context, e[0])
     if isinstance(e[0], str):
         if e[0] == 'quote':
-            # what is quote has wrong number of args?
+            if len(e) != 2:
+                raise ValueError('wrong numbers of params for QUOTE')
             # note quote does not do argument eval!
             return e[1]
         elif e[0] == 'atom':
-            # what is atom has wrong number of args?
+            if len(e) != 2:
+                raise ValueError('wrong numbers of params for ATOM')
             arg1 = eval(e[1], context)
             return 't' if _isAtom(arg1) else ()
         elif e[0] == 'eq':
-            # what if eq has wrong number of args?
+            if len(e) != 3:
+                raise ValueError('wrong numbers of params for EQ')
             arg1 = eval(e[1], context)
             arg2 = eval(e[2], context)
             if isinstance(arg1, str):
@@ -170,10 +226,7 @@ def eval(e, context):
                     else:
                         return id(arg1) == id(arg2)
         elif e[0] == 'car':
-            # what if car has wrong number of args?
-            arg1 = eval(e[1], context)
-            # what if arg1 is not a tuple?
-            return arg1[0]
+            return car(e[1:], context)
         elif e[0] == 'cdr':
             # what if cdr has wrong number of args?
             arg1 = eval(e[1], context)
