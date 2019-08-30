@@ -5,7 +5,7 @@ Parser and unparser for LISP s-expressions
 
 def parse(s):
     """
-    parse s-expression string into nested atom tuple
+    parse s-expression string into atom or nested atom tuple
     >>> parse('()')
     ()
 
@@ -20,13 +20,24 @@ def parse(s):
 
     >>> parse('(cdr (cons (quote a) (quote (b c))))')
     ('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c'))))
+
+    >>> parse('t')
+    't'
+
+    >>> parse('(a) b')
+    Traceback (most recent call last):
+    ValueError: extra stuff:['b']
     """
-    return _Tokens(s).parse_expr()
+    t = _Tokens(s)
+    ret = t.parse_expr(True)
+    if len(t) != 0:
+        raise ValueError('extra stuff:' + str(t))
+    return ret
 
 
 def unparse(e):
     """
-    convert nested atom tuple to s-expression string
+    convert atom or nested atom tuple to s-expression string
     >>> unparse(())
     '()'
 
@@ -41,6 +52,9 @@ def unparse(e):
 
     >>> unparse(('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c')))))
     '(cdr (cons (quote a) (quote (b c))))'
+
+    >>> unparse('t')
+    't'
     """
     assert e is not None
     if isinstance(e, str):
@@ -52,7 +66,12 @@ def unparse(e):
 class _Tokens():
     def __init__(self, s):
         self.tokens = list(tokenize(s))
-        self.tokens.append('(EOL)')
+
+    def __len__(self):
+        return len(self.tokens)
+
+    def __repr__(self):
+        return repr(self.tokens)
 
     def head(self):
         return self.tokens[0]
@@ -65,18 +84,20 @@ class _Tokens():
             ValueError('not found ")"')
         self._next()
 
-    def parse_expr(self):
+    def parse_expr(self, first=False):
         if self.head() == '(':
             self._next()
-            return self.parse_etuple()
+            ret = self.parse_etuple()
+            self._close()
+            return ret
         elif self.head() == ')':
             raise ValueError('unmatched ")"')
-        elif self.head() == '(EOL)':
-            raise ValueError('premature EOL')
         else:
-            if len(self.tokens) > 1:
-                raise ValueError('extra stuff after expression')
-            return self.head()
+            if first:
+                ret = self.head()
+                self._next()
+                return ret
+            raise ValueError('extra stuff after expression: ' + str(self.tokens))
 
     def parse_etuple(self):
         if self.head() == '(':
@@ -84,11 +105,8 @@ class _Tokens():
             ret = (self.parse_etuple(),)
             self._close()
             return ret + self.parse_etuple()
-            return ret
         elif self.head() == ')':
             return tuple()
-        elif self.head() == '(EOL)':
-            raise ValueError('premature EOL')
         else:
             ret = (self.head(),)
             self._next()

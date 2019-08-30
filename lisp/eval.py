@@ -1,8 +1,8 @@
 """
 Every LISP data object has 3 properties:
-* identity - memory address of str or list
-* type - str or list
-* value - for str self, for list id
+* identity - memory address of str or tuple
+* type - str or tuple
+* value - for str self, for tuple id
 
 ### quote operator
 >>> pp('(quote a)')
@@ -45,6 +45,12 @@ a
 >>> pp('(cdr (quote (a b c)))')
 (b c)
 
+>>> pp('(cdr (quote (c)))')
+()
+
+>>> pp('(cdr (quote ()))')
+()
+
 ### cons operator
 >>> pp('(cons (quote a) (quote (b c)))')
 (a b c)
@@ -70,6 +76,13 @@ first
 >>> pp('(cond (() (quote first)) \
               (() (quote second)))')
 ()
+
+### t symbol in context
+>>> pp('t')
+t
+
+>>> pp('(cons t ())')
+(t)
 
 ### lambda
 >>> pp('((lambda () (quote foo)))')
@@ -100,9 +113,7 @@ foo
                              ((quote t) (cons (subst x y (car z)) \
                                               (subst x y (cdr z))))))) \
              (quote m) (quote b) (quote (a b (a b c) d)))')
-(a)
-
-#(a m (a m c) d)
+(a m (a m c) d)
 """
 
 from s_parser import parse, unparse
@@ -113,22 +124,22 @@ def _isAtom(e):
     >>> _isAtom('foo')
     True
 
-    >>> _isAtom([])
+    >>> _isAtom(())
     True
 
-    >>> _isAtom(['foo'])
+    >>> _isAtom(('foo',))
     False
     """
     assert e is not None
-    return isinstance(e, str) or e == []
+    return isinstance(e, str) or e == ()
 
 
 def eval(e, context):
-    if e == []:
+    if e == ():
         return e
     if context is None:
         context = {}
-    assert isinstance(e, str) or isinstance(e, list)
+    assert isinstance(e, str) or isinstance(e, tuple)
     assert isinstance(context, dict)
     if isinstance(e, str):
         return from_context(context, e[0])
@@ -140,29 +151,41 @@ def eval(e, context):
         elif e[0] == 'atom':
             # what is atom has wrong number of args?
             arg1 = eval(e[1], context)
-            return 't' if _isAtom(arg1) else []
+            return 't' if _isAtom(arg1) else ()
         elif e[0] == 'eq':
             # what if eq has wrong number of args?
             arg1 = eval(e[1], context)
             arg2 = eval(e[2], context)
-            return 't' if arg1 == arg2 else []
+            if isinstance(arg1, str):
+                if isinstance(arg2, str):
+                    return 't' if arg1 == arg2 else ()
+                else:
+                    return ()
+            else:
+                if isinstance(arg2, str):
+                    return ()
+                else:
+                    if arg1 == () and arg2 == ():
+                        return 't'
+                    else:
+                        return id(arg1) == id(arg2)
         elif e[0] == 'car':
             # what if car has wrong number of args?
             arg1 = eval(e[1], context)
-            # what if arg1 is not a list?
+            # what if arg1 is not a tuple?
             return arg1[0]
         elif e[0] == 'cdr':
             # what if cdr has wrong number of args?
             arg1 = eval(e[1], context)
-            # what if arg1 is not a list?
+            # what if arg1 is not a tuple?
             return arg1[1:]
         elif e[0] == 'cons':
             # what if cons has wrong number of args?
             arg1 = eval(e[1], context)
             arg2 = eval(e[2], context)
-            ret = [arg1]
-            ret.extend(arg2)
-            return ret
+            if not isinstance(arg2, tuple):
+                raise ValueError('bad (cons {} "{}")'.format(arg1, arg2))
+            return (arg1,) + arg2
         elif e[0] == 'cond':
             # what if cond is not composed of pairs?
             # is it correct to return () if no pair matches?
@@ -175,7 +198,7 @@ def eval(e, context):
             s = from_context(context, e[0])
             if s == e[0]:
                 raise ValueError('symbols cannot be operators: ' + str(s))
-            return eval([s] + e[1:], context)
+            return eval((s,) + e[1:], context)
     elif e[0][0] == 'lambda':
         decl = e[0]
         params = decl[1]
@@ -205,4 +228,4 @@ def from_context(context, atom):
 
 
 def pp(s):
-    return print(unparse(eval(parse(s), {})))
+    return print(unparse(eval(parse(s), {'t': 't'})))
