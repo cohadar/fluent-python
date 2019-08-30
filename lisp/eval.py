@@ -4,15 +4,6 @@ Every LISP data object has 3 properties:
 * type - str or tuple
 * value - for str self, for tuple id
 
-### cdr operator
->>> pp('(cdr (quote (a b c)))')
-(b c)
-
->>> pp('(cdr (quote (c)))')
-()
-
->>> pp('(cdr (quote ()))')
-()
 
 ### cons operator
 >>> pp('(cons (quote a) (quote (b c)))')
@@ -209,6 +200,40 @@ def car(params, context):
     return arg1[0]
 
 
+def cdr(params, context):
+    """
+    CDR operator.
+    gets the tail of the list
+
+    >>> pp('(cdr (quote (a b c)))')
+    (b c)
+
+    >>> pp('(cdr (quote (c)))')
+    ()
+
+    >>> pp('(cdr (quote ()))')
+    ()
+
+    >>> pp('(cdr (quote ()) (quote ()))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CDR
+
+    >>> pp('(cdr)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CDR
+
+    >>> pp('(cdr (quote t))')
+    Traceback (most recent call last):
+    ValueError: not a list: t
+    """
+    if len(params) != 1:
+        raise ValueError('wrong numbers of params for CDR')
+    arg1 = eval(params[0], context)
+    if not isinstance(arg1, tuple):
+        raise ValueError('not a list: ' + str(arg1))
+    return arg1[1:]
+
+
 def eval(e, context):
     if e == ():
         return e
@@ -228,10 +253,7 @@ def eval(e, context):
         elif e[0] == 'car':
             return car(e[1:], context)
         elif e[0] == 'cdr':
-            # what if cdr has wrong number of args?
-            arg1 = eval(e[1], context)
-            # what if arg1 is not a tuple?
-            return arg1[1:]
+            return cdr(e[1:], context)
         elif e[0] == 'cons':
             # what if cons has wrong number of args?
             arg1 = eval(e[1], context)
