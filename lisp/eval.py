@@ -6,34 +6,37 @@ Every LISP data object has 3 properties:
 
 
 ### t symbol in context
->>> pp('t')
-t
+# >>> pp('t')
+# t
 
->>> pp('(cons t ())')
-(t)
+# >>> pp('(cons t ())')
+# (t)
+
+# >>> pp('(cond (t))')
+# t
 
 ### lambda
->>> pp('((lambda () (quote foo)))')
-foo
+# >>> pp('((lambda () (quote foo)))')
+# foo
 
->>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
-(a b)
+# >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
+# (a b)
 
->>> pp('((lambda (x y) (cons x (cdr y))) \
-         (quote z)                       \
-         (quote (a b c)))')
-(z b c)
+# >>> pp('((lambda (x y) (cons x (cdr y))) \
+#          (quote z)                       \
+#          (quote (a b c)))')
+# (z b c)
 
->>> pp('((lambda (f) (f (quote (b c)))) \
-         (quote (lambda (x) (cons (quote a) x))))')
-(a b c)
+# >>> pp('((lambda (f) (f (quote (b c)))) \
+#          (quote (lambda (x) (cons (quote a) x))))')
+# (a b c)
 
 ### label-ed function
->>> pp('((label f (lambda (x) (cons x f))) \
-         (quote foo))')
-(foo label f (lambda (x) (cons x f)))
+# >>> pp('((label f (lambda (x) (cons x f))) \
+#          (quote foo))')
+# (foo label f (lambda (x) (cons x f)))
 
-### recursive function
+# ### recursive function
 # >>> pp('((label subst (lambda (x y z) \
 #                        (cond ((atom z) \
 #                               (cond ((eq z y) x) \
@@ -154,7 +157,7 @@ def car(params, context):
 
     >>> pp('(car (quote x))')
     Traceback (most recent call last):
-    ValueError: not a list: x
+    ValueError: CAR param not a list: x
 
     >>> pp('(car (quote x) (quote x))')
     Traceback (most recent call last):
@@ -168,7 +171,7 @@ def car(params, context):
         raise ValueError('wrong numbers of params for CAR')
     arg1 = eval(params[0], context)
     if not isinstance(arg1, tuple):
-        raise ValueError('not a list: ' + str(arg1))
+        raise ValueError('CAR param not a list: ' + str(arg1))
     if arg1 == ():
         return ()
     return arg1[0]
@@ -198,13 +201,13 @@ def cdr(params, context):
 
     >>> pp('(cdr (quote t))')
     Traceback (most recent call last):
-    ValueError: not a list: t
+    ValueError: CDR param not a list: t
     """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for CDR')
     arg1 = eval(params[0], context)
     if not isinstance(arg1, tuple):
-        raise ValueError('not a list: ' + str(arg1))
+        raise ValueError('CDR param not a list: ' + str(arg1))
     return arg1[1:]
 
 
@@ -280,9 +283,6 @@ def cond(params, context):
     >>> pp('(cond)')
     ()
 
-    >>> pp('(cond (t))')
-    t
-
     >>> pp('(cond ((quote t)))')
     t
 
@@ -312,8 +312,8 @@ def eval(e, context):
         context = {}
     assert isinstance(e, str) or isinstance(e, tuple)
     assert isinstance(context, dict)
-    if isinstance(e, str):
-        return from_context(context, e[0])
+    # if isinstance(e, str):
+    #     return from_context(context, e)
     if isinstance(e[0], str):
         if e[0] == 'quote':
             return quote(e[1:], context)
@@ -330,13 +330,14 @@ def eval(e, context):
         elif e[0] == 'cond':
             return cond(e[1:], context)
         else:
-            s = from_context(context, e[0])
-            if s == e[0]:
-                if len(e) == 1:
-                    return s
-                else:
-                    raise ValueError('symbols cannot be operators: ' + str(s))
-            return eval((s,) + e[1:], context)
+            raise ValueError('Variables NYI: ' + str(e))
+            # s = from_context(context, e[0])
+            # if s == e[0]:
+            #     if len(e) == 1:
+            #         return s
+            #     else:
+            #         raise ValueError('symbols cannot be operators: ' + str(s))
+            # return eval((s,) + e[1:], context)
     elif e[0][0] == 'lambda':
         decl = e[0]
         params = decl[1]
@@ -359,11 +360,12 @@ def eval(e, context):
 def from_context(context, atom):
     assert isinstance(atom, str)
     if context is None:
-        raise ValueError('unknown atom: ' + atom)
+        raise ValueError('unknown variable: ' + atom)
     elif atom in context:
         return context[atom]
-    raise ValueError('unknown atom: {}\ncontext: {}'.format(atom, context))
+    raise ValueError('unknown variable: {}\ncontext: {}'.format(atom, context))
 
 
 def pp(s):
-    return print(unparse(eval(parse(s), {'t': 't'})))
+    # return print(unparse(eval(parse(s), {'t': 't'})))
+    return print(unparse(eval(parse(s), {})))
