@@ -1,37 +1,52 @@
 """
-Parser and unparser for LISP s-expressions
-Converts a text to a series
+Parser and unparser for LISP s-expressions.
+Converts a text to a series of nested string collections.
 """
 from s_tokenizer import tokenize
 
 
-def parse(s, collection=tuple):
+def parse(s, coltype):
     """
     parse s-expression string into atom or nested atom tuple
-    >>> parse('()')
+    >>> parse('()', tuple)
     ()
+    >>> parse('()', list)
+    []
 
-    >>> parse('(foo)')
+    >>> parse('(foo)', tuple)
     ('foo',)
+    >>> parse('(foo)', list)
+    ['foo']
 
-    >>> parse('(foo bar)')
+    >>> parse('(foo bar)', tuple)
     ('foo', 'bar')
+    >>> parse('(foo bar)', list)
+    ['foo', 'bar']
 
-    >>> parse('((foo))')
+    >>> parse('((foo))', tuple)
     (('foo',),)
+    >>> parse('((foo))', list)
+    [['foo']]
 
-    >>> parse('(cdr (cons (quote a) (quote (b c))))')
+    >>> parse('(cdr (cons (quote a) (quote (b c))))', tuple)
     ('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c'))))
+    >>> parse('(cdr (cons (quote a) (quote (b c))))', list)
+    ['cdr', ['cons', ['quote', 'a'], ['quote', ['b', 'c']]]]
 
-    >>> parse('t')
+    >>> parse('t', tuple)
+    't'
+    >>> parse('t', list)
     't'
 
-    >>> parse('(a) b')
+    >>> parse('(a) b', tuple)
+    Traceback (most recent call last):
+    ValueError: extra stuff:['b']
+    >>> parse('(a) b', list)
     Traceback (most recent call last):
     ValueError: extra stuff:['b']
     """
     t = _Tokens(s)
-    ret = t.parse_expr(collection, True)
+    ret = t.parse_expr(coltype, True)
     if len(t) != 0:
         raise ValueError('extra stuff:' + str(t))
     return ret
@@ -86,10 +101,10 @@ class _Tokens():
             ValueError('not found ")"')
         self._next()
 
-    def parse_expr(self, collection, first=False):
+    def parse_expr(self, coltype, first=False):
         if self.head() == '(':
             self._next()
-            ret = self.parse_collection(collection)
+            ret = self.parse_collection(coltype)
             self._close()
             return ret
         elif self.head() == ')':
@@ -101,19 +116,19 @@ class _Tokens():
                 return ret
             raise ValueError('extra stuff after expression: ' + str(self.tokens))
 
-    def parse_collection(self, collection):
+    def parse_collection(self, coltype):
         if self.head() == '(':
             self._next()
             ret = []
-            ret.append(self.parse_collection(collection))
-            ret = collection(ret)
+            ret.append(self.parse_collection(coltype))
+            ret = coltype(ret)
             self._close()
-            return ret + self.parse_collection(collection)
+            return ret + self.parse_collection(coltype)
         elif self.head() == ')':
-            return collection()
+            return coltype()
         else:
             ret = []
             ret.append(self.head())
-            ret = collection(ret)
+            ret = coltype(ret)
             self._next()
-            return ret + self.parse_collection(collection)
+            return ret + self.parse_collection(coltype)
