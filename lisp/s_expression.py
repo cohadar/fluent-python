@@ -1,6 +1,11 @@
-klasa koja parsira i unparsira s-expresione
+klasa koja predstavlja s-expression
+i lista i sam string su s-expression
 
-ima inner data koji su list/str ili tuple/str, nije bitno
+interni data da je ili str ili nested tuple S expressiona
+
+da ima fromStrTuple method koji prihvata izlaz parsera i vraća S kao prelazno
+rešenje.
+Prvo vidi kako će da se uklopi u eval, a onda napravi direktan parser za S
 
 ima lep quote handling
 
