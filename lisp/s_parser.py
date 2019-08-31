@@ -5,7 +5,7 @@ Converts a text to a series of nested string collections.
 from s_tokenizer import tokenize
 
 
-def parse(s, coltype):
+def parse(s, coltype=tuple):
     """
     parse s-expression string into atom or nested atom tuple
     >>> parse('()', tuple)
