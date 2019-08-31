@@ -1,9 +1,11 @@
 """
 Parser and unparser for LISP s-expressions
+Converts a text to a series
 """
+from s_tokenizer import tokenize
 
 
-def parse(s):
+def parse(s, collection=tuple):
     """
     parse s-expression string into atom or nested atom tuple
     >>> parse('()')
@@ -29,7 +31,7 @@ def parse(s):
     ValueError: extra stuff:['b']
     """
     t = _Tokens(s)
-    ret = t.parse_expr(True)
+    ret = t.parse_expr(collection, True)
     if len(t) != 0:
         raise ValueError('extra stuff:' + str(t))
     return ret
@@ -84,10 +86,10 @@ class _Tokens():
             ValueError('not found ")"')
         self._next()
 
-    def parse_expr(self, first=False):
+    def parse_expr(self, collection, first=False):
         if self.head() == '(':
             self._next()
-            ret = self.parse_etuple()
+            ret = self.parse_collection(collection)
             self._close()
             return ret
         elif self.head() == ')':
@@ -99,50 +101,19 @@ class _Tokens():
                 return ret
             raise ValueError('extra stuff after expression: ' + str(self.tokens))
 
-    def parse_etuple(self):
+    def parse_collection(self, collection):
         if self.head() == '(':
             self._next()
-            ret = (self.parse_etuple(),)
+            ret = []
+            ret.append(self.parse_collection(collection))
+            ret = collection(ret)
             self._close()
-            return ret + self.parse_etuple()
+            return ret + self.parse_collection(collection)
         elif self.head() == ')':
-            return tuple()
+            return collection()
         else:
-            ret = (self.head(),)
+            ret = []
+            ret.append(self.head())
+            ret = collection(ret)
             self._next()
-            return ret + self.parse_etuple()
-
-
-def tokenize(s):
-    """
-    >>> list(tokenize('()'))
-    ['(', ')']
-
-    >>> list(tokenize('foo'))
-    ['foo']
-
-    >>> list(tokenize('(foo)'))
-    ['(', 'foo', ')']
-
-    >>> list(tokenize('(foo bar)'))
-    ['(', 'foo', 'bar', ')']
-
-    >>> list(tokenize('(cdr (quote (a b c)))'))
-    ['(', 'cdr', '(', 'quote', '(', 'a', 'b', 'c', ')', ')', ')']
-    """
-    start = None
-    for i, c in enumerate(s):
-        if c in [' ', '\t', '\r', '\n']:
-            if start is not None:
-                yield s[start:i]
-                start = None
-        elif c in ['(', ')']:
-            if start is not None:
-                yield s[start:i]
-                start = None
-            yield c
-        else:
-            if start is None:
-                start = i
-    if start is not None:
-        yield s[start:]
+            return ret + self.parse_collection(collection)

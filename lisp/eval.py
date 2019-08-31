@@ -20,6 +20,7 @@ Every LISP data object has 3 properties:
 
 import copy
 from s_parser import parse, unparse
+from s_expression import S
 
 
 def quote(params, context):
@@ -356,14 +357,14 @@ def defun(e, context):
 
 
 def eval(e, context):
-    if e == ():
+    if e.isNil():
         return e
     if context is None:
         context = Context()
-    assert isinstance(e, str) or isinstance(e, tuple)
+    assert isinstance(e, S)
     assert isinstance(context, Context)
-    if isinstance(e, str):
-        return context.get_var(e)
+    if e.isVariable():
+        return context.get_var(e._data)
     if isinstance(e[0], str):
         if e[0] == 'quote':
             return quote(e[1:], context)
@@ -391,7 +392,7 @@ def eval(e, context):
 
 
 def pp(s, context=None):
-    return print(unparse(eval(parse(s), context)))
+    return print(eval(S(s), context))
 
 
 class Context():
