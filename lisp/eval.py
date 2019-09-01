@@ -19,7 +19,7 @@ Every LISP data object has 3 properties:
 """
 
 import copy
-from s_parser import parse, unparse
+from s_expression import S
 
 
 def quote(params, context):
@@ -356,42 +356,73 @@ def defun(e, context):
 
 
 def eval(e, context):
-    if e == ():
+    assert isinstance(e, S)
+    if e.isNil():
         return e
     if context is None:
         context = Context()
-    assert isinstance(e, str) or isinstance(e, tuple)
     assert isinstance(context, Context)
-    if isinstance(e, str):
+    if e.isVar():
         return context.get_var(e)
-    if isinstance(e[0], str):
-        if e[0] == 'quote':
-            return quote(e[1:], context)
-        elif e[0] == 'atom':
-            return atom(e[1:], context)
-        elif e[0] == 'eq':
-            return eq(e[1:], context)
-        elif e[0] == 'car':
-            return car(e[1:], context)
-        elif e[0] == 'cdr':
-            return cdr(e[1:], context)
-        elif e[0] == 'cons':
-            return cons(e[1:], context)
-        elif e[0] == 'cond':
-            return cond(e[1:], context)
-        elif e[0] == 'defun':
-            return defun(e[1:], context)
+    head = e.head()
+    tail = e.tail()
+    if head.isVar():
+        if head == 'quote':
+            return quote(tail, context)
+        elif head == 'atom':
+            return atom(tail, context)
+        elif head == 'eq':
+            return eq(tail, context)
+        elif head == 'car':
+            return car(tail, context)
+        elif head == 'cdr':
+            return cdr(tail, context)
+        elif head == 'cons':
+            return cons(tail, context)
+        elif head == 'cond':
+            return cond(tail, context)
+        elif head == 'defun':
+            return defun(tail, context)
         else:
-            newe = [context.get_func(e[0])]
-            newe += e[1:]
-            return eval(tuple(newe), context)
+            newhead = context.get_func(head)
+            assert isinstance(newhead, S)
+            newe = S.cons(newhead, tail)
+            return eval(newe, context)
     elif e[0][0] == 'lambda':
         return lambda_(e, context)
-    raise ValueError('NYI: ' + unparse(e))
+    raise ValueError('NYI: ' + str(e))
 
 
-def pp(s, context=None):
-    return print(unparse(eval(parse(s), context)))
+def pp(text, context=None):
+    return print(eval(S.parse(text), context))
+
+
+class Smap():
+    """
+    map{str -> S}
+    TODO: S -> S mapping
+    >>> Smap()
+    asd
+    """
+    def __init__(self, smap=None):
+        self._data = dict(smap)
+        self.validate()
+
+    def validate(self):
+        for k, v in self._data.items():
+            assert isinstance(k, str)
+            assert isinstance(v, S)
+
+    def __getitem__(self, key):
+        assert isinstance(key, str)
+        ret = self._data.get(key, None)
+        if ret:
+            return ret
+        raise ValueError('unknown variable or func: ' + key)
+
+    def update(self, d):
+        self._data.update(d)
+        self.validate()
 
 
 class Context():
@@ -414,8 +445,10 @@ class Context():
         raise ValueError('undefined function: ' + key)
 
     def update_vars(self, d):
+        assert isinstance(d, S)
         self.var_context.update(d)
 
     def update_funcs(self, d):
+        assert isinstance(d, S)
         self.func_context.update(d)
 
