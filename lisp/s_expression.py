@@ -14,6 +14,8 @@ ima isAtom, isNil i __eq__ __hash__ implementirano,
 kao i razne potrebne konstruktore i __iter__
 """
 
+import s_parser
+
 
 class S():
     """
@@ -54,3 +56,20 @@ class S():
             return all((S._validate(el) for el in data))
         else:
             assert False, "'{}' must be str or tuple, not '{}'".format(data, type(data))
+
+    def __repr__(self):
+        """
+        >>> S(())
+        ()
+        >>> S('foo')
+        foo
+        >>> S(('foo',))
+        (foo)
+        >>> S(('foo', 'bar'))
+        (foo bar)
+        >>> S((('foo',),))
+        ((foo))
+        >>> S(('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c')))))
+        (cdr (cons (quote a) (quote (b c))))
+        """
+        return s_parser.unparse(self._data)
