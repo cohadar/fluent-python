@@ -73,3 +73,31 @@ class S():
         (cdr (cons (quote a) (quote (b c))))
         """
         return s_parser.unparse(self._data)
+
+    @staticmethod
+    def parse(text):
+        """
+        >>> S.parse('()')
+        ()
+
+        >>> S.parse('foo')
+        foo
+
+        >>> S.parse('(foo)')
+        (foo)
+
+        >>> S.parse('(foo bar)')
+        (foo bar)
+
+        >>> S.parse('((foo))')
+        ((foo))
+
+        >>> S.parse('(cdr (cons (quote a) (quote (b c))))')
+        (cdr (cons (quote a) (quote (b c))))
+
+        >>> S.parse('(a) b')
+        Traceback (most recent call last):
+        ValueError: extra stuff:['b']
+        """
+        assert isinstance(text, str)
+        return S(s_parser.parse(text))
