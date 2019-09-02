@@ -158,8 +158,8 @@ class S():
         assert isinstance(self._data, tuple)
         return self._tail
 
-    @staticmethod
-    def cons(head, tail):
+    @classmethod
+    def cons(cls, head, tail):
         """
         >>> S.cons(S('foo'), S.parse('(bar zar)'))
         (foo bar zar)
@@ -170,7 +170,22 @@ class S():
         """
         assert isinstance(head, S)
         assert isinstance(tail, S)
-        return S((head._data,) + tail._data)
+        return cls((head._data,) + tail._data)
+
+    def __len__(self):
+        """
+        >>> len(S.parse('()'))
+        0
+        >>> len(S.parse('(foo)'))
+        1
+        >>> len(S.parse('(foo bar)'))
+        2
+        >>> len(S('foo'))
+        1
+        """
+        if self.isVar():
+            return 1
+        return len(self._data)
 
     def __eq__(self, other):
         if isinstance(other, str):
