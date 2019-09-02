@@ -322,14 +322,14 @@ def lambda_(e, context):
     params = decl[1]
     args = e[1:]
     if isinstance(params, str):
-        raise ValueError('params should be a list, not: ' + unparse(params))
+        raise ValueError('params should be a list, not: ' + str(params))
     if len(params) < len(args):
         raise ValueError('too many arguments given to LAMBDA')
     if len(params) > len(args):
         raise ValueError('too few arguments given to LAMBDA')
     for param in params:
         if not isinstance(param, str):
-            raise ValueError('invalid parameter: ' + unparse(param))
+            raise ValueError('invalid parameter: ' + str(param))
     args = [eval(arg, context) for arg in args]
     context = copy.deepcopy(context)
     context.update_vars(zip(params, args))
@@ -384,7 +384,7 @@ def eval(e, context):
         elif head == 'defun':
             return defun(tail, context)
         else:
-            newhead = context.get_func(head)
+            newhead = context.funcs[head]
             assert isinstance(newhead, S)
             newe = S.cons(newhead, tail)
             return eval(newe, context)
@@ -397,58 +397,9 @@ def pp(text, context=None):
     return print(eval(S.parse(text), context))
 
 
-class Smap():
-    """
-    map{str -> S}
-    TODO: S -> S mapping
-    >>> Smap()
-    asd
-    """
-    def __init__(self, smap=None):
-        self._data = dict(smap)
-        self.validate()
-
-    def validate(self):
-        for k, v in self._data.items():
-            assert isinstance(k, str)
-            assert isinstance(v, S)
-
-    def __getitem__(self, key):
-        assert isinstance(key, str)
-        ret = self._data.get(key, None)
-        if ret:
-            return ret
-        raise ValueError('unknown variable or func: ' + key)
-
-    def update(self, d):
-        self._data.update(d)
-        self.validate()
-
-
 class Context():
-    def __init__(self, var_context=None, func_context=None):
-        self.var_context = var_context if var_context is not None else {}
-        self.func_context = func_context if func_context is not None else {}
-
-    def get_var(self, key):
-        assert isinstance(key, str)
-        ret = self.var_context.get(key, None)
-        if ret:
-            return ret
-        raise ValueError('unknown variable: ' + key)
-
-    def get_func(self, key):
-        assert isinstance(key, str)
-        ret = self.func_context.get(key, None)
-        if ret:
-            return ret
-        raise ValueError('undefined function: ' + key)
-
-    def update_vars(self, d):
-        assert isinstance(d, S)
-        self.var_context.update(d)
-
-    def update_funcs(self, d):
-        assert isinstance(d, S)
-        self.func_context.update(d)
-
+    def __init__(self, vars=None, funcs=None):
+        if vars is None:
+            self.vars = {}
+        if funcs is None:
+            self.funcs = {}

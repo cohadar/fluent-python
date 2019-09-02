@@ -49,11 +49,11 @@ class S():
         self._data = data
         if isinstance(data, tuple):
             if data == ():
-                self.head = self
-                self.tail = self
+                self._head = self
+                self._tail = self
             else:
-                self.head = S(data[0])
-                self.tail = S(data[1:])
+                self._head = S(data[0])
+                self._tail = S(data[1:])
 
     @staticmethod
     def _validate(data):
@@ -143,12 +143,20 @@ class S():
         return self.isNil() or self.isVar()
 
     def head(self):
+        """
+        >>> S.parse('(foo bar zar)').head()
+        foo
+        """
         assert isinstance(self._data, tuple)
-        return self.head
+        return self._head
 
     def tail(self):
+        """
+        >>> S.parse('(foo bar zar)').tail()
+        (bar zar)
+        """
         assert isinstance(self._data, tuple)
-        return self.tail
+        return self._tail
 
     @staticmethod
     def cons(head, tail):
@@ -171,67 +179,3 @@ class S():
 
     def __hash__(self):
         return hash(self._data)
-
-
-class Smap():
-    """
-    map{str -> S}
-    TODO: S -> S mapping
-    """
-    def __init__(self, smap=None):
-        """
-        >>> Smap()
-        {}
-        >>> Smap({'foo': S.parse('(aaa bbb)')})
-        {'foo': (aaa bbb)}
-        >>> s = Smap({'foo': S.parse('(aaa bbb)')}); a = Smap(s); a
-        {'foo': (aaa bbb)}
-        """
-        self._data = {} if smap is None else dict(smap)
-        self.validate()
-
-    def validate(self):
-        """
-        >>> Smap({'foo': S.parse('(aaa bbb)'), 123: S()})
-        Traceback (most recent call last):
-        AssertionError: key is not str: 123
-        >>> Smap({'foo': S.parse('(aaa bbb)'), "123": ['do', 're', 'mi']})
-        Traceback (most recent call last):
-        AssertionError: value is not S: ['do', 're', 'mi']
-        """
-        for k, v in self._data.items():
-            assert isinstance(k, str), "key is not str: {}".format(k)
-            assert isinstance(v, S), "value is not S: {}".format(v)
-
-    def __getitem__(self, key):
-        """
-        >>> Smap({'foo': S.parse('(aaa bbb)')})['foo']
-        (aaa bbb)
-        >>> Smap({'foo': S.parse('(aaa bbb)')})['bar']
-        Traceback (most recent call last):
-        ValueError: unknown variable or func: bar
-        >>> Smap({'foo': S.parse('(aaa bbb)')})[1.23]
-        Traceback (most recent call last):
-        AssertionError: key is not str: 1.23
-        """
-        assert isinstance(key, str), "key is not str: {}".format(key)
-        ret = self._data.get(key, None)
-        if ret:
-            return ret
-        raise ValueError('unknown variable or func: ' + key)
-
-    def update(self, d):
-        """
-        >>> a = Smap({'foo': S.parse('(quote aaa)')}); \
-            b = Smap({'bar': S.parse('(quote bbb)')}); \
-            a.update(b); \
-            a; \
-            b
-        {'foo': (quote aaa), 'bar': (quote bbb)}
-        {'bar': (quote bbb)}
-        """
-        self._data.update(d._data)
-        self.validate()
-
-    def __repr__(self):
-        return repr(self._data)
