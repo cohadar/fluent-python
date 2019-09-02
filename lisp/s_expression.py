@@ -10,7 +10,7 @@ Prvo vidi kako će da se uklopi u eval, a onda napravi direktan parser za S
 
 ima lep quote handling
 
-ima isAtom, isNil i __eq__ __hash__ implementirano, 
+ima isAtom, isNil i __eq__ __hash__ implementirano,
 kao i razne potrebne konstruktore i __iter__
 """
 
@@ -188,9 +188,25 @@ class S():
         return len(self._data)
 
     def __eq__(self, other):
+        """
+        >>> S.parse('foo') == 'foo'
+        True
+        >>> S.parse('foo') == 'bar'
+        False
+        >>> S.parse('foo') == S('foo')
+        True
+        >>> S.parse('()') == S(())
+        True
+        >>> S.parse('(foo bar)') == S.parse('(foo bar)')
+        True
+        >>> S.parse('(foo bar)') == S.parse('(foo zar)')
+        False
+        """
         if isinstance(other, str):
             return self._data == other
-        raise ValueError('NYI __eq__')
+        if self.isAtom() and other.isAtom():
+            return self._data == other._data
+        return self._data == other._data
 
     def __hash__(self):
         return hash(self._data)

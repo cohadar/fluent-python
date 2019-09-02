@@ -42,7 +42,7 @@ def quote(params, context):
     """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for QUOTE')
-    return params[0]
+    return params.head()
 
 
 def atom(params, context):
