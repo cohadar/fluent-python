@@ -175,40 +175,40 @@ def cdr(params, context):
 
 
 def cons(params, context):
-    # """
-    # CONS operator.
-    # append item to the head of the list
-    # >>> pp('(cons (quote a) (quote (b c)))')
-    # (a b c)
+    """
+    CONS operator.
+    append item to the head of the list
+    >>> pp('(cons (quote a) (quote (b c)))')
+    (a b c)
 
-    # >>> pp('(cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))')
-    # (a b c)
+    >>> pp('(cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))')
+    (a b c)
 
-    # >>> pp('(car (cons (quote a) (quote (b c))))')
-    # a
+    >>> pp('(car (cons (quote a) (quote (b c))))')
+    a
 
-    # >>> pp('(cdr (cons (quote a) (quote (b c))))')
-    # (b c)
+    >>> pp('(cdr (cons (quote a) (quote (b c))))')
+    (b c)
 
-    # >>> pp('(cons (quote a))')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for CONS
+    >>> pp('(cons (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CONS
 
-    # >>> pp('(cons (quote a) (quote a) (quote a))')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for CONS
+    >>> pp('(cons (quote a) (quote a) (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CONS
 
-    # >>> pp('(cons (quote a) (quote b))')
-    # Traceback (most recent call last):
-    # ValueError: not a list: b
-    # """
+    >>> pp('(cons (quote a) (quote b))')
+    Traceback (most recent call last):
+    ValueError: not a list: b
+    """
     if len(params) != 2:
         raise ValueError('wrong numbers of params for CONS')
-    arg1 = eval(params[0], context)
-    arg2 = eval(params[1], context)
-    if not isinstance(arg2, tuple):
+    arg1 = eval(params.head(), context)
+    arg2 = eval(params.tail().head(), context)
+    if arg2.isVar():
         raise ValueError('not a list: ' + str(arg2))
-    return (arg1,) + arg2
+    return S.cons(arg1, arg2)
 
 
 def cond(params, context):
