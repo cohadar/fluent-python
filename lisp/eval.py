@@ -46,35 +46,35 @@ def quote(params, context):
 
 
 def atom(params, context):
-    # """
-    # ATOM operator.
-    # >>> pp('(atom (quote a))')
-    # t
+    """
+    ATOM operator.
+    >>> pp('(atom (quote a))')
+    t
 
-    # >>> pp('(atom (quote (a b c)))')
-    # ()
+    >>> pp('(atom (quote (a b c)))')
+    ()
 
-    # >>> pp('(atom (quote ()))')
-    # t
+    >>> pp('(atom (quote ()))')
+    t
 
-    # >>> pp('(atom (atom (quote a)))')
-    # t
+    >>> pp('(atom (atom (quote a)))')
+    t
 
-    # >>> pp('(atom (quote (atom (quote a))))')
-    # ()
+    >>> pp('(atom (quote (atom (quote a))))')
+    ()
 
-    # >>> pp('(atom)')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for ATOM
+    >>> pp('(atom)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for ATOM
 
-    # >>> pp('(atom (quote a) (quote a))')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for ATOM
-    # """
+    >>> pp('(atom (quote a) (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for ATOM
+    """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for ATOM')
-    arg1 = eval(params[0], context)
-    return 't' if isinstance(arg1, str) or arg1 == () else ()
+    arg1 = eval(params.head(), context)
+    return S('t') if arg1.isAtom() else S()
 
 
 def eq(params, context):
