@@ -184,6 +184,8 @@ class Smap():
         {}
         >>> Smap({'foo': S.parse('(aaa bbb)')})
         {'foo': (aaa bbb)}
+        >>> s = Smap({'foo': S.parse('(aaa bbb)')}); a = Smap(s); a
+        {'foo': (aaa bbb)}
         """
         self._data = {} if smap is None else dict(smap)
         self.validate()
@@ -225,8 +227,10 @@ class Smap():
             a.update(b); \
             a; \
             b
+        {'foo': (quote aaa), 'bar': (quote bbb)}
+        {'bar': (quote bbb)}
         """
-        self._data.update(d)
+        self._data.update(d._data)
         self.validate()
 
     def __repr__(self):

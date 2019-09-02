@@ -19,7 +19,7 @@ Every LISP data object has 3 properties:
 """
 
 import copy
-from s_expression import S
+from s_expression import S, Smap
 
 
 def quote(params, context):
