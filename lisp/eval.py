@@ -78,43 +78,34 @@ def atom(params, context):
 
 
 def eq(params, context):
-    # """
-    # EQ operator.
-    # returns 't' if both args are same string or both are empty lists, else ()
-    # >>> pp('(eq (quote a) (quote a))')
-    # t
+    """
+    EQ operator.
+    returns 't' if both args are same string or both are empty lists, else ()
+    >>> pp('(eq (quote a) (quote a))')
+    t
 
-    # >>> pp('(eq (quote a) (quote b))')
-    # ()
+    >>> pp('(eq (quote a) (quote b))')
+    ()
 
-    # >>> pp('(eq (quote ()) (quote ()))')
-    # t
+    >>> pp('(eq (quote ()) (quote ()))')
+    t
 
-    # >>> pp('(eq (quote a))')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for EQ
+    >>> pp('(eq (quote (aaa bbb)) (quote (aaa bbb)))')
+    ()
 
-    # >>> pp('(eq (quote a) (quote a) (quote a))')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for EQ
-    # """
+    >>> pp('(eq (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for EQ
+
+    >>> pp('(eq (quote a) (quote a) (quote a))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for EQ
+    """
     if len(params) != 2:
         raise ValueError('wrong numbers of params for EQ')
-    arg1 = eval(params[0], context)
-    arg2 = eval(params[1], context)
-    if isinstance(arg1, str):
-        if isinstance(arg2, str):
-            return 't' if arg1 == arg2 else ()
-        else:
-            return ()
-    else:
-        if isinstance(arg2, str):
-            return ()
-        else:
-            if arg1 == () and arg2 == ():
-                return 't'
-            else:
-                return id(arg1) == id(arg2)
+    arg1 = eval(params.head(), context)
+    arg2 = eval(params.tail().head(), context)
+    return S('t') if arg1 == arg2 else S()
 
 
 def car(params, context):
@@ -367,7 +358,7 @@ def eval(e, context):
         context = Context()
     assert isinstance(context, Context)
     if e.isVar():
-        return context.get_var(e)
+        return context.vars[e]
     head = e.head()
     tail = e.tail()
     if head.isVar():

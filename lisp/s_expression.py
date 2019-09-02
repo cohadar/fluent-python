@@ -198,7 +198,7 @@ class S():
         >>> S.parse('()') == S(())
         True
         >>> S.parse('(foo bar)') == S.parse('(foo bar)')
-        True
+        False
         >>> S.parse('(foo bar)') == S.parse('(foo zar)')
         False
         """
@@ -206,7 +206,7 @@ class S():
             return self._data == other
         if self.isAtom() and other.isAtom():
             return self._data == other._data
-        return self._data == other._data
+        return id(self) == id(other)
 
     def __hash__(self):
         return hash(self._data)
