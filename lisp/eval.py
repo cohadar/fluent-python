@@ -109,35 +109,35 @@ def eq(params, context):
 
 
 def car(params, context):
-    # """
-    # CAR operator.
-    # returns the head of the list or nil
-    # >>> pp('(car (quote (a b c)))')
-    # a
+    """
+    CAR operator.
+    returns the head of the list or nil
+    >>> pp('(car (quote (a b c)))')
+    a
 
-    # >>> pp('(car (quote ()))')
-    # ()
+    >>> pp('(car (quote ()))')
+    ()
 
-    # >>> pp('(car (quote x))')
-    # Traceback (most recent call last):
-    # ValueError: CAR param not a list: x
+    >>> pp('(car (quote x))')
+    Traceback (most recent call last):
+    ValueError: CAR param not a list: x
 
-    # >>> pp('(car (quote x) (quote x))')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for CAR
+    >>> pp('(car (quote x) (quote x))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CAR
 
-    # >>> pp('(car)')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for CAR
-    # """
+    >>> pp('(car)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CAR
+    """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for CAR')
-    arg1 = eval(params[0], context)
-    if not isinstance(arg1, tuple):
+    arg1 = eval(params.head(), context)
+    if arg1.isNil():
+        return arg1
+    if arg1.isVar():
         raise ValueError('CAR param not a list: ' + str(arg1))
-    if arg1 == ():
-        return ()
-    return arg1[0]
+    return arg1.head()
 
 
 def cdr(params, context):
