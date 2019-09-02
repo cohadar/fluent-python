@@ -46,31 +46,31 @@ def quote(params, context):
 
 
 def atom(params, context):
-    """
-    ATOM operator.
-    >>> pp('(atom (quote a))')
-    t
+    # """
+    # ATOM operator.
+    # >>> pp('(atom (quote a))')
+    # t
 
-    >>> pp('(atom (quote (a b c)))')
-    ()
+    # >>> pp('(atom (quote (a b c)))')
+    # ()
 
-    >>> pp('(atom (quote ()))')
-    t
+    # >>> pp('(atom (quote ()))')
+    # t
 
-    >>> pp('(atom (atom (quote a)))')
-    t
+    # >>> pp('(atom (atom (quote a)))')
+    # t
 
-    >>> pp('(atom (quote (atom (quote a))))')
-    ()
+    # >>> pp('(atom (quote (atom (quote a))))')
+    # ()
 
-    >>> pp('(atom)')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for ATOM
+    # >>> pp('(atom)')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for ATOM
 
-    >>> pp('(atom (quote a) (quote a))')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for ATOM
-    """
+    # >>> pp('(atom (quote a) (quote a))')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for ATOM
+    # """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for ATOM')
     arg1 = eval(params[0], context)
@@ -78,26 +78,26 @@ def atom(params, context):
 
 
 def eq(params, context):
-    """
-    EQ operator.
-    returns 't' if both args are same string or both are empty lists, else ()
-    >>> pp('(eq (quote a) (quote a))')
-    t
+    # """
+    # EQ operator.
+    # returns 't' if both args are same string or both are empty lists, else ()
+    # >>> pp('(eq (quote a) (quote a))')
+    # t
 
-    >>> pp('(eq (quote a) (quote b))')
-    ()
+    # >>> pp('(eq (quote a) (quote b))')
+    # ()
 
-    >>> pp('(eq (quote ()) (quote ()))')
-    t
+    # >>> pp('(eq (quote ()) (quote ()))')
+    # t
 
-    >>> pp('(eq (quote a))')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for EQ
+    # >>> pp('(eq (quote a))')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for EQ
 
-    >>> pp('(eq (quote a) (quote a) (quote a))')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for EQ
-    """
+    # >>> pp('(eq (quote a) (quote a) (quote a))')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for EQ
+    # """
     if len(params) != 2:
         raise ValueError('wrong numbers of params for EQ')
     arg1 = eval(params[0], context)
@@ -118,27 +118,27 @@ def eq(params, context):
 
 
 def car(params, context):
-    """
-    CAR operator.
-    returns the head of the list or nil
-    >>> pp('(car (quote (a b c)))')
-    a
+    # """
+    # CAR operator.
+    # returns the head of the list or nil
+    # >>> pp('(car (quote (a b c)))')
+    # a
 
-    >>> pp('(car (quote ()))')
-    ()
+    # >>> pp('(car (quote ()))')
+    # ()
 
-    >>> pp('(car (quote x))')
-    Traceback (most recent call last):
-    ValueError: CAR param not a list: x
+    # >>> pp('(car (quote x))')
+    # Traceback (most recent call last):
+    # ValueError: CAR param not a list: x
 
-    >>> pp('(car (quote x) (quote x))')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for CAR
+    # >>> pp('(car (quote x) (quote x))')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for CAR
 
-    >>> pp('(car)')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for CAR
-    """
+    # >>> pp('(car)')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for CAR
+    # """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for CAR')
     arg1 = eval(params[0], context)
@@ -150,31 +150,31 @@ def car(params, context):
 
 
 def cdr(params, context):
-    """
-    CDR operator.
-    gets the tail of the list
+    # """
+    # CDR operator.
+    # gets the tail of the list
 
-    >>> pp('(cdr (quote (a b c)))')
-    (b c)
+    # >>> pp('(cdr (quote (a b c)))')
+    # (b c)
 
-    >>> pp('(cdr (quote (c)))')
-    ()
+    # >>> pp('(cdr (quote (c)))')
+    # ()
 
-    >>> pp('(cdr (quote ()))')
-    ()
+    # >>> pp('(cdr (quote ()))')
+    # ()
 
-    >>> pp('(cdr (quote ()) (quote ()))')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for CDR
+    # >>> pp('(cdr (quote ()) (quote ()))')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for CDR
 
-    >>> pp('(cdr)')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for CDR
+    # >>> pp('(cdr)')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for CDR
 
-    >>> pp('(cdr (quote t))')
-    Traceback (most recent call last):
-    ValueError: CDR param not a list: t
-    """
+    # >>> pp('(cdr (quote t))')
+    # Traceback (most recent call last):
+    # ValueError: CDR param not a list: t
+    # """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for CDR')
     arg1 = eval(params[0], context)
@@ -184,33 +184,33 @@ def cdr(params, context):
 
 
 def cons(params, context):
-    """
-    CONS operator.
-    append item to the head of the list
-    >>> pp('(cons (quote a) (quote (b c)))')
-    (a b c)
+    # """
+    # CONS operator.
+    # append item to the head of the list
+    # >>> pp('(cons (quote a) (quote (b c)))')
+    # (a b c)
 
-    >>> pp('(cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))')
-    (a b c)
+    # >>> pp('(cons (quote a) (cons (quote b) (cons (quote c) (quote ()))))')
+    # (a b c)
 
-    >>> pp('(car (cons (quote a) (quote (b c))))')
-    a
+    # >>> pp('(car (cons (quote a) (quote (b c))))')
+    # a
 
-    >>> pp('(cdr (cons (quote a) (quote (b c))))')
-    (b c)
+    # >>> pp('(cdr (cons (quote a) (quote (b c))))')
+    # (b c)
 
-    >>> pp('(cons (quote a))')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for CONS
+    # >>> pp('(cons (quote a))')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for CONS
 
-    >>> pp('(cons (quote a) (quote a) (quote a))')
-    Traceback (most recent call last):
-    ValueError: wrong numbers of params for CONS
+    # >>> pp('(cons (quote a) (quote a) (quote a))')
+    # Traceback (most recent call last):
+    # ValueError: wrong numbers of params for CONS
 
-    >>> pp('(cons (quote a) (quote b))')
-    Traceback (most recent call last):
-    ValueError: not a list: b
-    """
+    # >>> pp('(cons (quote a) (quote b))')
+    # Traceback (most recent call last):
+    # ValueError: not a list: b
+    # """
     if len(params) != 2:
         raise ValueError('wrong numbers of params for CONS')
     arg1 = eval(params[0], context)
@@ -221,47 +221,47 @@ def cons(params, context):
 
 
 def cond(params, context):
-    """
-    COND operator.
-    lazy conditional execution of pair alternatives
-    >>> pp('(cond \
-                ((eq(quote a)(quote b)) \
-                    (quote first)) \
-                ((atom(quote a)) \
-                    (quote second)))')
-    second
+    # """
+    # COND operator.
+    # lazy conditional execution of pair alternatives
+    # >>> pp('(cond \
+    #             ((eq(quote a)(quote b)) \
+    #                 (quote first)) \
+    #             ((atom(quote a)) \
+    #                 (quote second)))')
+    # second
 
-    >>> pp('(cond \
-                ((eq(quote a)(quote a)) \
-                    (quote first)) \
-                ((atom (quote a)) \
-                    (quote second)))')
-    first
+    # >>> pp('(cond \
+    #             ((eq(quote a)(quote a)) \
+    #                 (quote first)) \
+    #             ((atom (quote a)) \
+    #                 (quote second)))')
+    # first
 
-    >>> pp('(cond \
-                (() \
-                    (quote first)) \
-                (() \
-                    (quote second)))')
-    ()
+    # >>> pp('(cond \
+    #             (() \
+    #                 (quote first)) \
+    #             (() \
+    #                 (quote second)))')
+    # ()
 
-    >>> pp('(cond \
-                (() \
-                    (quote first)) \
-                ((quote t) \
-                    (quote second)))')
-    second
+    # >>> pp('(cond \
+    #             (() \
+    #                 (quote first)) \
+    #             ((quote t) \
+    #                 (quote second)))')
+    # second
 
-    >>> pp('(cond)')
-    ()
+    # >>> pp('(cond)')
+    # ()
 
-    >>> pp('(cond ((quote t)))')
-    t
+    # >>> pp('(cond ((quote t)))')
+    # t
 
-    >>> pp('(cond t)')
-    Traceback (most recent call last):
-    ValueError: COND clause must be a list
-    """
+    # >>> pp('(cond t)')
+    # Traceback (most recent call last):
+    # ValueError: COND clause must be a list
+    # """
     # what if cond is not composed of pairs?
     # is it correct to return () if no pair matches?
     for clause in params:
@@ -278,49 +278,49 @@ def cond(params, context):
 
 
 def lambda_(e, context):
-    """
-    LAMBDA function
-    >>> pp('((lambda () (quote foo)))')
-    foo
+    # """
+    # LAMBDA function
+    # >>> pp('((lambda () (quote foo)))')
+    # foo
 
-    >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
-    (a b)
+    # >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
+    # (a b)
 
-    >>> pp('((lambda (x y) (cons x (cdr y))) \
-             (quote z)                       \
-             (quote (a b c)))')
-    (z b c)
+    # >>> pp('((lambda (x y) (cons x (cdr y))) \
+    #          (quote z)                       \
+    #          (quote (a b c)))')
+    # (z b c)
 
-    >>> pp('((lambda (f) (f (quote (b c)))) (quote (lambda (x) (cons (quote a) x))))')
-    Traceback (most recent call last):
-    ValueError: undefined function: f
+    # >>> pp('((lambda (f) (f (quote (b c)))) (quote (lambda (x) (cons (quote a) x))))')
+    # Traceback (most recent call last):
+    # ValueError: undefined function: f
 
-    >>> pp('((lambda ((x)) (cons x (quote (b)))) (quote a))')
-    Traceback (most recent call last):
-    ValueError: invalid parameter: (x)
+    # >>> pp('((lambda ((x)) (cons x (quote (b)))) (quote a))')
+    # Traceback (most recent call last):
+    # ValueError: invalid parameter: (x)
 
-    >>> pp('((lambda x (cons x (quote (b)))) (quote a))')
-    Traceback (most recent call last):
-    ValueError: params should be a list, not: x
+    # >>> pp('((lambda x (cons x (quote (b)))) (quote a))')
+    # Traceback (most recent call last):
+    # ValueError: params should be a list, not: x
 
-    >>> pp('((lambda (x) (cons x (quote (b))) (quote t)) (quote a))')
-    t
+    # >>> pp('((lambda (x) (cons x (quote (b))) (quote t)) (quote a))')
+    # t
 
-    >>> pp('((lambda (x) ) (quote a))')
-    ()
+    # >>> pp('((lambda (x) ) (quote a))')
+    # ()
 
-    >>> pp('((lambda (x) (cons x (quote (b)))) (quote a) (quote b))')
-    Traceback (most recent call last):
-    ValueError: too many arguments given to LAMBDA
+    # >>> pp('((lambda (x) (cons x (quote (b)))) (quote a) (quote b))')
+    # Traceback (most recent call last):
+    # ValueError: too many arguments given to LAMBDA
 
-    >>> pp('((lambda (x) (cons x (quote (b)))) )')
-    Traceback (most recent call last):
-    ValueError: too few arguments given to LAMBDA
-    """
-    decl = e[0]
-    assert decl[0] == 'lambda'
-    params = decl[1]
-    args = e[1:]
+    # >>> pp('((lambda (x) (cons x (quote (b)))) )')
+    # Traceback (most recent call last):
+    # ValueError: too few arguments given to LAMBDA
+    # """
+    decl = e.head()
+    assert decl.head() == 'lambda'
+    params = decl.head().head()
+    args = e.tail()
     if isinstance(params, str):
         raise ValueError('params should be a list, not: ' + str(params))
     if len(params) < len(args):
@@ -340,13 +340,13 @@ def lambda_(e, context):
 
 
 def defun(e, context):
-    """
-    define a function
-    >>> context = Context(); pp('(defun madd (a b) (cons a (cons b ())))', context); \
-        pp('(madd (quote x) (quote y))', context)
-    madd
-    (x y)
-    """
+    # """
+    # define a function
+    # >>> context = Context(); pp('(defun madd (a b) (cons a (cons b ())))', context); \
+    #     pp('(madd (quote x) (quote y))', context)
+    # madd
+    # (x y)
+    # """
     # TODO: cornercases
     name = e[0]
     newe = ['lambda']
@@ -356,6 +356,10 @@ def defun(e, context):
 
 
 def eval(e, context):
+    """
+    >>> s = S.parse('()'); eval(s, Context()) == s
+    True
+    """
     assert isinstance(e, S)
     if e.isNil():
         return e
@@ -388,7 +392,7 @@ def eval(e, context):
             assert isinstance(newhead, S)
             newe = S.cons(newhead, tail)
             return eval(newe, context)
-    elif e[0][0] == 'lambda':
+    elif head.head() == 'lambda':
         return lambda_(e, context)
     raise ValueError('NYI: ' + str(e))
 
