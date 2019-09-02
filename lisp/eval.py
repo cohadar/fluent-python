@@ -141,37 +141,37 @@ def car(params, context):
 
 
 def cdr(params, context):
-    # """
-    # CDR operator.
-    # gets the tail of the list
+    """
+    CDR operator.
+    gets the tail of the list
 
-    # >>> pp('(cdr (quote (a b c)))')
-    # (b c)
+    >>> pp('(cdr (quote (a b c)))')
+    (b c)
 
-    # >>> pp('(cdr (quote (c)))')
-    # ()
+    >>> pp('(cdr (quote (c)))')
+    ()
 
-    # >>> pp('(cdr (quote ()))')
-    # ()
+    >>> pp('(cdr (quote ()))')
+    ()
 
-    # >>> pp('(cdr (quote ()) (quote ()))')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for CDR
+    >>> pp('(cdr (quote ()) (quote ()))')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CDR
 
-    # >>> pp('(cdr)')
-    # Traceback (most recent call last):
-    # ValueError: wrong numbers of params for CDR
+    >>> pp('(cdr)')
+    Traceback (most recent call last):
+    ValueError: wrong numbers of params for CDR
 
-    # >>> pp('(cdr (quote t))')
-    # Traceback (most recent call last):
-    # ValueError: CDR param not a list: t
-    # """
+    >>> pp('(cdr (quote t))')
+    Traceback (most recent call last):
+    ValueError: CDR param not a list: t
+    """
     if len(params) != 1:
         raise ValueError('wrong numbers of params for CDR')
-    arg1 = eval(params[0], context)
-    if not isinstance(arg1, tuple):
+    arg1 = eval(params.head(), context)
+    if arg1.isVar():
         raise ValueError('CDR param not a list: ' + str(arg1))
-    return arg1[1:]
+    return arg1.tail()
 
 
 def cons(params, context):
