@@ -212,60 +212,52 @@ def cons(params, context):
 
 
 def cond(params, context):
-    # """
-    # COND operator.
-    # lazy conditional execution of pair alternatives
-    # >>> pp('(cond \
-    #             ((eq(quote a)(quote b)) \
-    #                 (quote first)) \
-    #             ((atom(quote a)) \
-    #                 (quote second)))')
-    # second
-
-    # >>> pp('(cond \
-    #             ((eq(quote a)(quote a)) \
-    #                 (quote first)) \
-    #             ((atom (quote a)) \
-    #                 (quote second)))')
-    # first
-
-    # >>> pp('(cond \
-    #             (() \
-    #                 (quote first)) \
-    #             (() \
-    #                 (quote second)))')
-    # ()
-
-    # >>> pp('(cond \
-    #             (() \
-    #                 (quote first)) \
-    #             ((quote t) \
-    #                 (quote second)))')
-    # second
-
-    # >>> pp('(cond)')
-    # ()
-
-    # >>> pp('(cond ((quote t)))')
-    # t
-
-    # >>> pp('(cond t)')
-    # Traceback (most recent call last):
-    # ValueError: COND clause must be a list
-    # """
-    # what if cond is not composed of pairs?
-    # is it correct to return () if no pair matches?
+    """
+    COND operator.
+    lazy conditional execution of pair alternatives
+    >>> pp('(cond \
+                ((eq(quote a)(quote b)) \
+                    (quote first)) \
+                ((atom(quote a)) \
+                    (quote second)))')
+    second
+    >>> pp('(cond \
+                ((eq(quote a)(quote a)) \
+                    (quote first)) \
+                ((atom (quote a)) \
+                    (quote second)))')
+    first
+    >>> pp('(cond \
+                (() \
+                    (quote first)) \
+                (() \
+                    (quote second)))')
+    ()
+    >>> pp('(cond \
+                (() \
+                    (quote first)) \
+                ((quote t) \
+                    (quote second)))')
+    second
+    >>> pp('(cond)')
+    ()
+    >>> pp('(cond ((quote t)))')
+    t
+    >>> pp('(cond t)')
+    Traceback (most recent call last):
+    ValueError: COND clause must be a list
+    """
     for clause in params:
-        if not isinstance(clause, tuple):
-            raise ValueError('COND clause must be a list')
-        if clause == ():
+        if clause.isNil():
             raise ValueError('COND clause cannot be empty list')
-        ret = eval(clause[0], context)
+        if clause.isVar():
+            raise ValueError('COND clause must be a list')
+        ret = eval(clause.head(), context)
         if ret == 't':
-            for exp in clause[1:]:
+            for exp in clause.tail():
                 ret = eval(exp, context)
             return ret
-    return ()
+    return S()
 
 
 def lambda_(e, context):

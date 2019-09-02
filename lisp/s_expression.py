@@ -158,6 +158,24 @@ class S():
         assert isinstance(self._data, tuple)
         return self._tail
 
+    def __iter__(self):
+        """
+        >>> [x for x in S.parse('foo')]
+        Traceback (most recent call last):
+        AssertionError: cannot iter a variable: foo
+        >>> [x for x in S.parse('()')]
+        []
+        >>> [x for x in S.parse('(foo bar zar)')]
+        [foo, bar, zar]
+        """
+        assert not self.isVar(), "cannot iter a variable: " + str(self)
+        ret = []
+        temp = self
+        while len(temp) > 0:
+            ret.append(temp.head())
+            temp = temp.tail()
+        return iter(ret)
+
     @classmethod
     def cons(cls, head, tail):
         """
