@@ -261,63 +261,63 @@ def cond(params, context):
 
 
 def lambda_(e, context):
-    # """
-    # LAMBDA function
-    # >>> pp('((lambda () (quote foo)))')
-    # foo
+    """
+    LAMBDA function
+    >>> pp('((lambda () (quote foo)))')
+    foo
 
-    # >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
-    # (a b)
+    >>> pp('((lambda (x) (cons x (quote (b)))) (quote a))')
+    (a b)
 
-    # >>> pp('((lambda (x y) (cons x (cdr y))) \
-    #          (quote z)                       \
-    #          (quote (a b c)))')
-    # (z b c)
+    >>> pp('((lambda (x y) (cons x (cdr y))) \
+             (quote z)                       \
+             (quote (a b c)))')
+    (z b c)
 
-    # >>> pp('((lambda (f) (f (quote (b c)))) (quote (lambda (x) (cons (quote a) x))))')
-    # Traceback (most recent call last):
-    # ValueError: undefined function: f
+    >>> pp('((lambda (f) (f (quote (b c)))) (quote (lambda (x) (cons (quote a) x))))')
+    Traceback (most recent call last):
+    ValueError: undefined function: f
 
-    # >>> pp('((lambda ((x)) (cons x (quote (b)))) (quote a))')
-    # Traceback (most recent call last):
-    # ValueError: invalid parameter: (x)
+    >>> pp('((lambda ((x)) (cons x (quote (b)))) (quote a))')
+    Traceback (most recent call last):
+    ValueError: invalid parameter: (x)
 
-    # >>> pp('((lambda x (cons x (quote (b)))) (quote a))')
-    # Traceback (most recent call last):
-    # ValueError: params should be a list, not: x
+    >>> pp('((lambda x (cons x (quote (b)))) (quote a))')
+    Traceback (most recent call last):
+    ValueError: params should be a list, not: x
 
-    # >>> pp('((lambda (x) (cons x (quote (b))) (quote t)) (quote a))')
-    # t
+    >>> pp('((lambda (x) (cons x (quote (b))) (quote t)) (quote a))')
+    t
 
-    # >>> pp('((lambda (x) ) (quote a))')
-    # ()
+    >>> pp('((lambda (x) ) (quote a))')
+    ()
 
-    # >>> pp('((lambda (x) (cons x (quote (b)))) (quote a) (quote b))')
-    # Traceback (most recent call last):
-    # ValueError: too many arguments given to LAMBDA
+    >>> pp('((lambda (x) (cons x (quote (b)))) (quote a) (quote b))')
+    Traceback (most recent call last):
+    ValueError: too many arguments given to LAMBDA
 
-    # >>> pp('((lambda (x) (cons x (quote (b)))) )')
-    # Traceback (most recent call last):
-    # ValueError: too few arguments given to LAMBDA
-    # """
+    >>> pp('((lambda (x) (cons x (quote (b)))) )')
+    Traceback (most recent call last):
+    ValueError: too few arguments given to LAMBDA
+    """
     decl = e.head()
     assert decl.head() == 'lambda'
-    params = decl.head().head()
+    params = decl.tail().head()
     args = e.tail()
-    if isinstance(params, str):
+    if params.isVar():
         raise ValueError('params should be a list, not: ' + str(params))
     if len(params) < len(args):
         raise ValueError('too many arguments given to LAMBDA')
     if len(params) > len(args):
         raise ValueError('too few arguments given to LAMBDA')
     for param in params:
-        if not isinstance(param, str):
+        if not param.isVar():
             raise ValueError('invalid parameter: ' + str(param))
     args = [eval(arg, context) for arg in args]
     context = copy.deepcopy(context)
-    context.update_vars(zip(params, args))
-    ret = ()
-    for body in decl[2:]:
+    context.vars.update(zip(params, args))
+    ret = S()
+    for body in decl.tail().tail():
         ret = eval(body, context)
     return ret
 
@@ -371,7 +371,9 @@ def eval(e, context):
         elif head == 'defun':
             return defun(tail, context)
         else:
-            newhead = context.funcs[head]
+            newhead = context.funcs.get(head, None)
+            if newhead is None:
+                raise ValueError('undefined function: ' + str(head))
             assert isinstance(newhead, S)
             newe = S.cons(newhead, tail)
             return eval(newe, context)
