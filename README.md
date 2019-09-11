@@ -11,3 +11,5 @@
 * https://github.com/python/cpython.git
 
 * https://docs.scipy.org/doc/numpy/user/quickstart.html
+
+`dis.dis('aa[bb] += cc')`
