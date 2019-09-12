@@ -1,3 +1,5 @@
+from symbol import Symbol
+from cons import Cons
 """
 Parser and unparser for LISP s-expressions
 """
@@ -7,19 +9,19 @@ def parse(s):
     """
     parse s-expression string into atom or nested atom tuple
     >>> parse('()')
-    ()
+    NIL
 
     >>> parse('(foo)')
-    ('foo',)
+    (foo)
 
     >>> parse('(foo bar)')
-    ('foo', 'bar')
+    (foo bar)
 
     >>> parse('((foo))')
-    (('foo',),)
+    ((foo))
 
     >>> parse('(cdr (cons (quote a) (quote (b c))))')
-    ('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c'))))
+    (cdr (cons (quote a) (quote (b c))))
 
     >>> parse('t')
     't'
@@ -102,15 +104,15 @@ class _Tokens():
     def parse_etuple(self):
         if self.head() == '(':
             self._next()
-            ret = (self.parse_etuple(),)
+            car = self.parse_etuple()
             self._close()
-            return ret + self.parse_etuple()
+            return Cons(car, self.parse_etuple())  # <---<< cons
         elif self.head() == ')':
-            return tuple()
+            return Symbol.NIL  # <---<< empty list
         else:
-            ret = (self.head(),)
+            car = Symbol(self.head())
             self._next()
-            return ret + self.parse_etuple()
+            return Cons(car, self.parse_etuple())  # <---<< cons
 
 
 def tokenize(s):
