@@ -1,7 +1,7 @@
 from symbol import Symbol
 from cons import Cons
 """
-Parser and unparser for LISP s-expressions
+Parser for LISP s-expressions
 """
 
 
@@ -12,19 +12,19 @@ def parse(s):
     NIL
 
     >>> parse('(foo)')
-    (foo)
+    (FOO)
 
     >>> parse('(foo bar)')
-    (foo bar)
+    (FOO BAR)
 
     >>> parse('((foo))')
-    ((foo))
+    ((FOO))
 
     >>> parse('(cdr (cons (quote a) (quote (b c))))')
-    (cdr (cons (quote a) (quote (b c))))
+    (CDR (CONS (QUOTE A) (QUOTE (B C))))
 
     >>> parse('t')
-    't'
+    T
 
     >>> parse('(a) b')
     Traceback (most recent call last):
@@ -35,34 +35,6 @@ def parse(s):
     if len(t) != 0:
         raise ValueError('extra stuff:' + str(t))
     return ret
-
-
-def unparse(e):
-    """
-    convert atom or nested atom tuple to s-expression string
-    >>> unparse(())
-    '()'
-
-    >>> unparse(('foo',))
-    '(foo)'
-
-    >>> unparse(('foo', 'bar'))
-    '(foo bar)'
-
-    >>> unparse((('foo',),))
-    '((foo))'
-
-    >>> unparse(('cdr', ('cons', ('quote', 'a'), ('quote', ('b', 'c')))))
-    '(cdr (cons (quote a) (quote (b c))))'
-
-    >>> unparse('t')
-    't'
-    """
-    assert e is not None
-    if isinstance(e, str):
-        return e
-    else:
-        return "({})".format(" ".join([unparse(v) for v in e]))
 
 
 class _Tokens():
@@ -96,7 +68,7 @@ class _Tokens():
             raise ValueError('unmatched ")"')
         else:
             if first:
-                ret = self.head()
+                ret = Symbol(self.head())  # <---<< symbol
                 self._next()
                 return ret
             raise ValueError('extra stuff after expression: ' + str(self.tokens))

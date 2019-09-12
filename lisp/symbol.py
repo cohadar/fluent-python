@@ -19,6 +19,9 @@ True
 
 >>> Symbol.isNIL(Symbol.T)
 False
+
+>>> Symbol('a')
+A
 """
 
 
@@ -28,7 +31,7 @@ class Symbol():
 
     def __init__(self, atom):
         assert isinstance(atom, str)
-        self._atom = atom
+        self._atom = atom.upper()
 
     def __hash__(self):
         return hash(self._atom)
